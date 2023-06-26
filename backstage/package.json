@@ -1,0 +1,17 @@
+{
+  "name": "backstage",
+  "version": "1.0.0",
+  "description": "A Node.js backend for the AudioMoth Live.",
+  "main": "index.js",
+  "scripts": {
+    "configure": "node-gyp configure",
+    "clean": "node-gyp clean",
+    "build": "node-gyp build",
+    "rebuild": "node-gyp rebuild",
+    "dev": "node-gyp --debug configure build",
+    "build:all": "npm run configure && npm run rebuild",
+    "prepublishOnly": "npm run build:all"
+  },
+  "author": "openacousticdevices.info",
+  "license": "ISC"
+}

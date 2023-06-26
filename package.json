@@ -1,0 +1,80 @@
+{
+  "name": "AudioMoth-Live",
+  "version": "1.0.0",
+  "description": "An Electron-based application for recording and analysing live audio from high sample rate microphones, including the AudioMoth USB Microphone.",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "dist": "node builder.js"
+  },
+  "author": "openacousticdevices.info",
+  "license": "ISC",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/OpenAcousticDevices/AudioMoth-Live.git"
+  },
+  "build": {
+    "extraResources": [
+      "./simulator/"
+    ],
+    "asar": {
+      "smartUnpack": true
+    },
+    "appId": "info.openacousticdevices.audiomothliveapp",
+    "mac": {
+      "hardenedRuntime": true,
+      "entitlements": "build/entitlements.mac.inherit.plist",
+      "target": "dmg"
+    },
+    "dmg": {
+      "contents": [
+        {
+          "x": 110,
+          "y": 150
+        },
+        {
+          "x": 430,
+          "y": 150,
+          "type": "link",
+          "path": "/Applications"
+        }
+      ],
+      "artifactName": "AudioMothLiveAppSetup${version}.dmg"
+    },
+    "win": {
+      "target": "nsis",
+      "icon": "build/icon.ico"
+    },
+    "nsis": {
+      "createDesktopShortcut": true,
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "artifactName": "AudioMothLiveAppSetup${version}.exe",
+      "shortcutName": "AudioMoth Live App",
+      "uninstallDisplayName": "AudioMoth Live App ${version}"
+    },
+    "linux": {
+      "icon": "build/",
+      "category": "Utility"
+    }
+  },
+  "devDependencies": {
+    "electron": "^22.2.1",
+    "electron-builder": "^23.6.0",
+    "eslint": "^7.27.0",
+    "eslint-config-standard": "^14.1.0",
+    "eslint-plugin-import": "^2.22.1",
+    "eslint-plugin-node": "^10.0.0",
+    "eslint-plugin-promise": "^4.3.1",
+    "eslint-plugin-standard": "^4.0.2"
+  },
+  "dependencies": {
+    "@electron/remote": "^2.0.8",
+    "backstage": "file:backstage",
+    "bootstrap": "^4.6.2",
+    "electron-debug": "^3.2.0",
+    "jquery": "^3.6.3",
+    "jspdf": "^2.5.1",
+    "popper.js": "^1.16.1"
+  }
+}

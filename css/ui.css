@@ -1,0 +1,12 @@
+body {
+  background: #FFFFFF;
+}
+
+.page-item.active.disabled .page-link {
+  color: white;
+  background-color: grey;
+}
+
+.selection-span {
+  color: #d11e35;
+}

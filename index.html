@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html>
+
+    <head>
+        <link rel="stylesheet" href="./node_modules/bootstrap/dist/css/bootstrap.min.css">
+        <link id="uiCSS" rel="stylesheet" href="css/ui.css">
+        <link rel="stylesheet" href="css/index.css">
+        <title>AudioMoth Live App</title>
+    </head>
+
+    <body style="overflow: hidden;">
+
+        <div class="container-fluid" style="margin: 0px; padding: 0px; display: flex; flex-direction: column; height: 100vh">
+
+            <div class="row" style="margin-bottom: 2px; margin-top: 8px; margin-left: 10px; margin-right: 10px;">
+                <div class="col-6" style="padding: 0px;"><span class="mono-text" id="input-span">&#8203</span></div>
+                <div class="col-6" style="text-align: right; padding: 0px;">
+                    <span class="value-span mono-text selection-span" style="display: none;" id="frequency-span"></span>
+                    <span class="value-span mono-text selection-span" style="display: none;" id="time-span"></span>
+                    <span class="value-span mono-text" id="clock-span"></span>
+                </div>
+            </div>
+
+            <div id="plot-holder" style="flex: 1;">
+
+                <div class="row" style="padding-left: 25px; padding-right: 25px; padding-top: 0px; height: 30%;">
+                    <div class="wrapper" style="height: 100%;">
+                        <svg class="plot-canvas" id="waveform-baseline-svg" width="calc(100vw - 20px)" height="100%" style="z-index: 1;"></svg>
+                        <svg class="plot-canvas" id="waveform-time-svg" width="calc(100vw - 20px)" height="100%" style="z-index: 2;"></svg>
+                        <canvas class="plot-canvas" id="waveform-canvas" width="1004px" height="113px" style="z-index: 0;"></canvas>
+                        <div class="plot-canvas" id="waveform-resizable-border-div" style="border-style: solid; border-width: 1px; z-index: 3; width: 100%; height: 100%;"></div>
+                        <div style="width: calc(100vw - 20px); height: 100%; z-index: 3;"></div>
+                    </div>
+                </div>
+
+                <div class="row" style="padding-left: 25px; padding-right: 25px; padding-top: 10px; padding-bottom: 10px; height: 70%;">
+                    <div class="wrapper">
+                        <canvas class="plot-canvas" id="spectrogram-canvas" width="1004px" height="289px" style="z-index: 0;"></canvas>
+                        <svg class="plot-canvas" id="spectrogram-frequency-svg" width="calc(100vw - 20px)" height="100%" style="z-index: 2;"></svg>
+                        <svg class="plot-canvas" id="spectrogram-heterodyne-svg" width="calc(100vw - 20px)" height="100%" style="z-index: 1;"></svg>
+                        <div class="plot-canvas" id="spectrogram-resizable-border-div" style="border-style: solid; border-width: 1px; width: 100%; height: 100%; z-index: 3;"></div>
+                        <div style="width: calc(100vw - 20px); height: 100%; z-index: 4;"></div>
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="row" id="controls-holder" style="padding-left: 15px; padding-right: 15px;">
+
+                <div class="col" style="max-width: 250px;">
+
+                    <div class="row">
+
+                        <ul class="pagination" id="display-width-pagination" style="margin-left: 10px; margin-bottom: 8px; margin-top: 5px;">
+                            <li class="page-item" style="width: 46px; text-align: center;"><a class="page-link" href="#" aria-label="1 second">1s</a></li>
+                            <li class="page-item" style="width: 46px; text-align: center;"><a class="page-link" href="#" aria-label="5 seconds">5s</a></li>
+                            <li class="page-item active" style="width: 46px; text-align: center;"><a class="page-link" href="#" aria-label="10 seconds">10s</a></li>
+                            <li class="page-item" style="width: 46px; text-align: center;"><a class="page-link" href="#" aria-label="20 seconds">20s</a></li>
+                            <li class="page-item" style="width: 46px; text-align: center;"><a class="page-link" href="#" aria-label="60 seconds">60s</a></li>
+                        </ul>
+
+                    </div>
+
+                    <div class="row">
+                        <button class="btn btn-danger" id="pause-play-button" style="width: 45%; height: 38px; margin-left: 10px; padding-top: 8px;" aria-label="Pause/play">
+                            <img id="play-icon" class="button-icon" src="./assets/play.svg" alt="Play button" style="display: none; width: 19px; height: 19px;">
+                            <img id='pause-icon' class="button-icon" src="./assets/pause.svg" alt="Pause button" style="width: 19px; height: 19px;">
+                        </button>
+                        <button class="btn btn-secondary" id="clear-button" style="width: 45%; height: 38px; margin-left: auto; margin-right: 10px; font-size: small;">Clear</button>
+                    </div>
+
+                </div>
+
+                <div class="col" style="width: 100%;">
+
+                    <div class="row">
+                        <label style="min-height: 35px; display: inline-flex; align-items: center; margin-top: 5px; margin-left: 5px;" aria-label="Sample rate (kilohertz):">Sample rate (kHz):</label>
+                        <ul class="pagination" id="sample-rate-pagination" style="margin-top: 5px; margin-bottom: 0px; margin-right: 8px; margin-left: auto;">
+                            <li class="page-item sample-rate-pagination-option"><a class="page-link" href="#" aria-label="8 kilohertz sample rate">8</a></li>
+                            <li class="page-item sample-rate-pagination-option"><a class="page-link" href="#" aria-label="16 kilohertz sample rate">16</a></li>
+                            <li class="page-item sample-rate-pagination-option"><a class="page-link" href="#" aria-label="32 kilohertz sample rate">32</a></li>
+                            <li class="page-item active sample-rate-pagination-option"><a class="page-link" href="#" aria-label="48 kilohertz sample rate">48</a></li>
+                            <li class="page-item sample-rate-pagination-option"><a class="page-link" href="#" aria-label="96 kilohertz sample rate">96</a></li>
+                            <li class="page-item sample-rate-pagination-option"><a class="page-link" href="#" aria-label="192 kilohertz sample rate">192</a></li>
+                            <li class="page-item sample-rate-pagination-option"><a class="page-link" href="#" aria-label="250 kilohertz sample rate">250</a></li>
+                            <li class="page-item sample-rate-pagination-option"><a class="page-link" href="#" aria-label="384 kilohertz sample rate">384</a></li>
+                        </ul>
+                    </div>
+
+                    <div class="row">
+                        <label style="min-height: 35px; display: inline-flex; align-items: center; margin-left: 5px; margin-bottom: 5px;">Autosave file duration (mins):</label>
+                        <ul class="pagination" id="autosave-length-pagination" style="margin-bottom: 5px; margin-right: 8px; margin-left: auto;">
+                            <li class="page-item active autosave-pagination-option"><a class="page-link" href="#" aria-label="Autosave off">Off</a></li>
+                            <li class="page-item autosave-pagination-option"><a class="page-link" href="#" aria-label="1 minute autosave file duration">1</a></li>
+                            <li class="page-item autosave-pagination-option"><a class="page-link" href="#" aria-label="5 minute autosave file duration">5</a></li>
+                            <li class="page-item autosave-pagination-option"><a class="page-link" href="#" aria-label="10 minute autosave file duration">10</a></li>
+                            <li class="page-item autosave-pagination-option"><a class="page-link" href="#" aria-label="60 minute autosave file duration">60</a></li>
+                        </ul>
+                    </div>
+
+                </div>
+
+                <div class="col" style="padding: 0px; max-width: 235px;">
+
+                    <div class="row" style="width: 100%; margin-left: 0px;">
+                        <ul class="pagination" id="monitor-pagination" style="margin-left: auto; margin-right: 10px; margin-bottom: 8px; margin-top: 5px;">
+                            <li class="page-item active" style="width: 45px; text-align: center;"><a class="page-link" href="#">Off</a></li>
+                            <li class="page-item" style="width: 75px; text-align: center;"><a class="page-link" href="#">Monitor</a></li>
+                            <li class="page-item" style="width: 95px; text-align: center;"><a class="page-link" href="#">Heterodyne</a></li>
+                        </ul>
+                    </div>
+
+                    <div class="row" style="width: 100%; margin-left: 0px;">
+                        <div style="display: inline-flex; margin-left: auto; width: 120px; height: 35px; border: 1px solid #dee2e6; border-radius: 0.25rem; align-items: center;">
+                            <span id="heterodyne-span" class="grey mono-text" style="margin-left: auto; line-height: 35px;">12.0</span><span class="grey mono-text" style="line-height: 35px; margin-right: 10px; margin-left: 2px;" id="khz-span"> kHz</span>
+                        </div>
+                        <button class="btn btn-secondary" id="heterodyne-down-button" style="height: 35px; width: 40px; margin-left: 10px;" disabled aria-label="Decrement heterodyne frequency">
+                            <img class="button-icon" src="./assets/caret-down.svg" alt="Decrement heterodyne frequency button">
+                        </button>
+                        <button class="btn btn-secondary" id="heterodyne-up-button" style="height: 35px; width: 40px; margin-left: 5px; margin-right: 10px;" disabled aria-label="Increment heterodyne frequency">
+                            <img class="button-icon" src="./assets/caret-up.svg" alt="Increment heterodyne frequency button">
+                        </button>
+                    </div>
+
+                </div>
+
+            </div>
+
+            <div class="row" style="margin: 0px; margin-top: 8px; margin-bottom: 8px;">
+
+                <div class="col" style="padding: 0px; max-width: 250px;">
+                
+                    <button class="btn btn-secondary" id="save-plot-button" style="margin-left: 10px; width: 230px; height: 38px;" data-toggle="modal" data-target="#export-modal" aria-label="Save plot">
+                        <img id="camera-icon" class="button-icon" src="./assets/camera.svg" alt="Save plot button" style="width: 25px; height: 25px;">
+                    </button>
+
+                </div>
+
+                <div class="col" style="padding-left: 0px; padding-right: 10px;">
+                    <button class="btn btn-primary" id="capture-wav-button"style="margin-right: 5px; width: 100%;">Capture WAV</button>
+                </div>
+
+            </div>
+
+        </div>
+
+        <div class="modal fade" id="export-modal" tabindex="-1" role="dialog" aria-labelledby="export-modal-label" aria-hidden="true">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                    <h5 class="modal-title" id="export-modal-label">Export image</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close" id="export-close-button">
+                        <span class="modal-close-button" aria-hidden="true">&times;</span>
+                    </button>
+                    </div>
+                    <div class="modal-body">
+                        The current view can be downloaded as a PNG, JPG, or PDF file.
+                    </div>
+                    <div class="modal-footer">
+                        <button id="export-png-button" type="button" class="btn btn-success">PNG</button>
+                        <button id="export-jpg-button" type="button" class="btn btn-success">JPG</button>
+                        <button id="export-pdf-button" type="button" class="btn btn-success">PDF</button>
+                        <button id="export-all-button" type="button" class="btn btn-primary">All</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal fade" id="error-modal" tabindex="-1" role="dialog" aria-labelledby="error-modal-title" aria-hidden="true">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="error-modal-title">Error</h5>
+                    </div>
+                    <div class="modal-body" id="error-modal-body">
+                        An error has occurred
+                    </div>
+                    <div class="modal-footer">
+                        <div id="error-dont-show-holder" class="mr-auto" style="height: 100%; display: none; align-items: baseline;">
+                            <input id="error-dont-show-checkbox" type="checkbox">
+                            <label for="error-dont-show-checkbox" id="error-check-label" style="margin-left: 8px; margin-bottom: 0px;">Don't show again</label>
+                        </div>
+                        <button id="error-modal-okay-button" type="button" class="btn btn-secondary" data-dismiss="modal">Okay</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal fade" id="two-option-modal" tabindex="-1" role="dialog" aria-labelledby="two-option-modal-title" aria-hidden="true">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 id="two-option-modal-title" class="modal-title">1 or 2</h5>
+                    </div>
+                    <div class="modal-body" id="two-option-modal-body">
+                        1 or 2?
+                    </div>
+                    <div class="modal-footer">
+                        <button id="two-option-button0" type="button" class="btn btn-success" data-dismiss="modal">1</button>
+                        <button id="two-option-button1" type="button" class="btn btn-danger" data-dismiss="modal">2</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal fade" id="two-option-check-modal" tabindex="-1" role="dialog" aria-labelledby="two-option-check-modal-title" aria-hidden="true">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 id="two-option-check-modal-title" class="modal-title">1 or 2</h5>
+                    </div>
+                    <div class="modal-body" id="two-option-check-modal-body">
+                        1 or 2?
+                    </div>
+                    <div class="modal-footer">
+                        <div class="mr-auto" style="height: 100%; display: flex; align-items: baseline;">
+                            <input id="two-option-check-checkbox" type="checkbox" style="display: none;" checked>
+                            <label for="two-option-check-checkbox" id="two-option-check-label" style="margin-left: 8px; margin-bottom: 0px; display: none;">Checked</label>
+                        </div>
+                        <button id="two-option-check-button0" type="button" class="btn btn-success" data-dismiss="modal">1</button>
+                        <button id="two-option-check-button1" type="button" class="btn btn-danger" data-dismiss="modal">2</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </body>
+
+    <script>
+        window.jQuery = window.$ = require('jquery');
+    </script>
+    <script src="./node_modules/bootstrap/dist/js/bootstrap.bundle.js"></script>
+    <script src="js/index.js" charset="utf-8"></script>
+
+</html>

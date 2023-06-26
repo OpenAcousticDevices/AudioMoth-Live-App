@@ -1,0 +1,70 @@
+body {
+  background: #000000;
+  color: #FFFFFF;
+}
+
+input {
+  background: #000000;
+  color: #FFFFFF;
+}
+
+select {
+  background: #000000;
+  color: #FFFFFF;
+}
+
+.modal-content {
+  background: #222222;
+  color: #FFFFFF;
+}
+
+.pagination > li > a
+{
+  background-color: black;
+  color: white
+}
+
+.pagination > li > a:focus,
+.pagination > li > a:hover,
+.pagination > li > span:focus,
+.pagination > li > span:hover
+{
+  background-color: white;
+  color: black;
+}
+
+.pagination > .page-item.disabled > a
+{
+  background-color: black;
+  color: lightgray
+}
+
+.pagination.disabled > .page-item.disabled > a:focus,
+.pagination.disabled > .page-item.disabled > a:hover,
+.pagination.disabled > .page-item.disabled > span:focus,
+.pagination.disabled > .page-item.disabled > span:hover
+{
+  background-color: lightgray;
+  color: black;
+}
+
+.page-item.active.disabled .page-link {
+  color: white;
+  background-color: grey;
+}
+
+.page-item.active .page-link {
+  border-color: white;
+}
+
+.modal-close-button {
+  color: white;
+}
+
+:not(button) {
+  box-shadow: none !important;
+}
+
+.selection-span {
+  color: #ffffff;
+}

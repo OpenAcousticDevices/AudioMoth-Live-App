@@ -1270,6 +1270,10 @@ exportAllButton.addEventListener('click', () => {
 
                 if (err) {
 
+                    handlePlotResult(err);
+
+                } else {
+
                     savePlot(constants.EXPORT_PDF, handlePlotResult);
 
                 }

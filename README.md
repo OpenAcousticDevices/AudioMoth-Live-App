@@ -4,12 +4,15 @@ An Electron-based application for recording and analysing live audio from high s
 For more details on the device itself, visit [www.openacousticdevices.info](http://www.openacousticdevices.info).
 
 ### Usage ###
-Once the repository has been cloned, you must either have electron-builder installed globally, or get it for the app specifically by running:
+Once the repository has been cloned, install all required dependencies with:
 ```
 npm install
 ```
-
-From then onwards, or if you already had electron-builder installed, start the application with:
+Then navigate to `backstage` and build the backend:
+```
+npm install
+```
+From then onwards, start the application with:
 ```
 npm run start 
 ```

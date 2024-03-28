@@ -7,6 +7,10 @@
 #include <stdio.h>
 #include <node_api.h>
 
+#ifdef __APPLE__
+    #define MA_NO_RUNTIME_LINKING
+#endif
+
 #define MINIAUDIO_IMPLEMENTATION
 
 #include "stft.h"

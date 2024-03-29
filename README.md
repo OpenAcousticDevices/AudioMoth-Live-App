@@ -8,10 +8,6 @@ Once the repository has been cloned, install all required dependencies with:
 ```
 npm install
 ```
-Then navigate to `backstage` and build the backend:
-```
-npm install
-```
 From then onwards, start the application with:
 ```
 npm run start 

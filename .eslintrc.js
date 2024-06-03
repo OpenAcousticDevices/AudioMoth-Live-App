@@ -6,6 +6,9 @@
 
 module.exports = {
     "extends": "standard",
+    "parserOptions": {
+        "ecmaVersion": "latest"
+    },
     "rules": {
         "semi": [2, "always"],
         "indent": ["error", 4],

@@ -15,7 +15,22 @@ require('electron-debug')({
 
 const path = require('path');
 
-var win, aboutWindow;
+let mainWindow, aboutWindow, gainWindow;
+
+const iconLocation = (process.platform === 'linux') ? '/build/icon.png' : '/build/icon.ico';
+const standardWindowSettings = {
+    resizable: false,
+    fullscreenable: false,
+    minimizable: false,
+    autoHideMenuBar: true,
+    icon: path.join(__dirname, iconLocation),
+    useContentSize: true,
+    webPreferences: {
+        enableRemoteModule: true,
+        nodeIntegration: true,
+        contextIsolation: false
+    }
+};
 
 const MENU_HEIGHT = 20;
 
@@ -38,45 +53,134 @@ function shrinkWindowHeight (windowHeight) {
 
 }
 
-function openAboutWindow () {
+/* Generate settings objects for windows and progress bars */
 
-    if (aboutWindow) {
+function generateSettings (width, height, title) {
+
+    const uniqueSettings = {
+        width,
+        height,
+        title,
+        show: false
+    };
+
+    const settings = Object.assign({}, standardWindowSettings, uniqueSettings);
+
+    settings.parent = mainWindow;
+
+    return settings;
+
+}
+
+function openGainWindow () {
+
+    if (gainWindow) {
+
+        gainWindow.webContents.send('get-settings');
+
+        gainWindow.show();
 
         return;
 
     }
 
-    const iconLocation = (process.platform === 'linux') ? '/build/icon.png' : '/build/icon.ico';
+    let windowWidth = 448;
+    const windowHeight = 140;
 
-    aboutWindow = new BrowserWindow({
-        width: 400,
-        height: shrinkWindowHeight(320),
-        title: 'About AudioMoth Live App',
-        resizable: false,
-        fullscreenable: false,
-        icon: path.join(__dirname, iconLocation),
-        parent: win,
-        webPreferences: {
-            enableRemoteModule: true,
-            nodeIntegration: true,
-            contextIsolation: false
-        }
+    if (process.platform === 'linux') {
+
+        windowWidth = 443;
+
+    } else if (process.platform === 'darwin') {
+
+        windowWidth = 443;
+
+    }
+
+    const settings = generateSettings(windowWidth, windowHeight, 'Set Gain');
+    gainWindow = new BrowserWindow(settings);
+
+    gainWindow.setMenu(null);
+    gainWindow.loadURL(path.join('file://', __dirname, '/gain.html'));
+
+    gainWindow.setFullScreenable(false);
+
+    require('@electron/remote/main').enable(gainWindow.webContents);
+
+    gainWindow.on('close', (e) => {
+
+        e.preventDefault();
+
+        gainWindow.hide();
+
     });
+
+    gainWindow.webContents.on('dom-ready', () => {
+
+        mainWindow.webContents.send('poll-night-mode');
+        gainWindow.show();
+
+    });
+
+    ipcMain.on('night-mode-poll-reply', (e, nightMode) => {
+
+        if (gainWindow) {
+
+            gainWindow.webContents.send('night-mode', nightMode);
+
+        }
+
+    });
+
+}
+
+function openAboutWindow () {
+
+    if (aboutWindow) {
+
+        aboutWindow.show();
+
+        return;
+
+    }
+
+    let windowWidth = 400;
+    let windowHeight = 310;
+
+    if (process.platform === 'linux') {
+
+        windowWidth = 395;
+        windowHeight = 310;
+
+    } else if (process.platform === 'darwin') {
+
+        windowWidth = 395;
+        windowHeight = 310;
+
+    }
+
+    const settings = generateSettings(windowWidth, windowHeight, 'About');
+    aboutWindow = new BrowserWindow(settings);
 
     aboutWindow.setMenu(null);
     aboutWindow.loadURL(path.join('file://', __dirname, '/about.html'));
 
+    aboutWindow.setFullScreenable(false);
+
     require('@electron/remote/main').enable(aboutWindow.webContents);
 
-    aboutWindow.on('close', () => {
+    aboutWindow.on('close', (e) => {
 
-        aboutWindow = null;
+        e.preventDefault();
+
+        aboutWindow.hide();
 
     });
 
     aboutWindow.webContents.on('dom-ready', () => {
 
-        win.webContents.send('poll-night-mode');
+        mainWindow.webContents.send('poll-night-mode');
+        aboutWindow.show();
 
     });
 
@@ -94,11 +198,17 @@ function openAboutWindow () {
 
 function toggleNightMode () {
 
-    win.webContents.send('night-mode');
+    mainWindow.webContents.send('night-mode');
 
     if (aboutWindow) {
 
         aboutWindow.webContents.send('night-mode');
+
+    }
+
+    if (gainWindow) {
+
+        gainWindow.webContents.send('night-mode');
 
     }
 
@@ -119,7 +229,7 @@ function simulate (index) {
     }
 
     simulationIndex = index === simulationIndex ? -1 : index;
-    win.webContents.send('simulate', simulationIndex);
+    mainWindow.webContents.send('simulate', simulationIndex);
 
 }
 
@@ -159,9 +269,15 @@ const createWindow = () => {
             accelerator: 'CommandOrControl+S',
             click: () => {
 
-                win.webContents.send('change-save-destination');
+                mainWindow.webContents.send('change-save-destination');
 
             }
+        }, {
+            type: 'separator'
+        }, {
+            label: 'Show AudioMoth Gain Controls',
+            accelerator: 'CommandOrControl+G',
+            click: openGainWindow
         }, {
             type: 'separator'
         }, {
@@ -174,11 +290,9 @@ const createWindow = () => {
 
                 const menuItem = menu.getMenuItemById('highSampleRateDefault');
 
-                win.webContents.send('high-sample-rate-default', menuItem.checked);
+                mainWindow.webContents.send('high-sample-rate-default', menuItem.checked);
 
             }
-        }, {
-            type: 'separator'
         }, {
             type: 'checkbox',
             id: 'lowAmpColourScale',
@@ -189,7 +303,7 @@ const createWindow = () => {
 
                 const menuItem = menu.getMenuItemById('lowAmpColourScale');
 
-                win.webContents.send('low-amp-colour-scale', menuItem.checked);
+                mainWindow.webContents.send('low-amp-colour-scale', menuItem.checked);
 
             }
         }, {
@@ -202,7 +316,7 @@ const createWindow = () => {
             checked: true,
             click: () => {
 
-                win.webContents.send('local-time', menu.getMenuItemById('localTime').checked);
+                mainWindow.webContents.send('local-time', menu.getMenuItemById('localTime').checked);
 
             }
         }, {
@@ -231,16 +345,12 @@ const createWindow = () => {
         label: 'Help',
         submenu: [{
             label: 'About',
-            click: () => {
-
-                openAboutWindow();
-
-            }
+            click: openAboutWindow
         }, {
             label: 'Check For Updates',
             click: () => {
 
-                win.webContents.send('update-check');
+                mainWindow.webContents.send('update-check');
 
             }
         }, {
@@ -268,7 +378,7 @@ const createWindow = () => {
 
     Menu.setApplicationMenu(menu);
 
-    win = new BrowserWindow({
+    mainWindow = new BrowserWindow({
         width: w,
         height: h,
         useContentSize: true,
@@ -285,22 +395,22 @@ const createWindow = () => {
         }
     });
 
-    win.loadURL(path.join('file://', __dirname, '/index.html'));
+    mainWindow.loadURL(path.join('file://', __dirname, '/index.html'));
 
     // Show devtools in production
     // win.webContents.openDevTools();
 
-    require('@electron/remote/main').enable(win.webContents);
+    require('@electron/remote/main').enable(mainWindow.webContents);
 
-    win.on('resize', () => {
+    mainWindow.on('resize', () => {
 
-        win.webContents.send('resize');
+        mainWindow.webContents.send('resize');
 
     });
 
     if (smallSize) {
 
-        win.webContents.send('resize');
+        mainWindow.webContents.send('resize');
 
     }
 
@@ -357,9 +467,29 @@ const createWindow = () => {
 
     });
 
+    ipcMain.on('redraw', () => {
+
+        if (gainWindow) {
+
+            gainWindow.webContents.send('get-settings');
+
+        }
+
+    });
+
+    ipcMain.on('is-simulating', (e, isSimulating) => {
+
+        if (gainWindow) {
+
+            gainWindow.webContents.send('is-simulating', isSimulating);
+
+        }
+
+    });
+
     ipcMain.on('app-quit', () => {
 
-        win.close();
+        mainWindow.close();
         app.quit();
 
     });

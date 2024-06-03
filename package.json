@@ -1,6 +1,6 @@
 {
   "name": "AudioMoth-Live",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "An Electron-based application for recording and analysing live audio from high sample rate microphones, including the AudioMoth USB Microphone.",
   "main": "main.js",
   "scripts": {
@@ -59,22 +59,24 @@
     }
   },
   "devDependencies": {
-    "electron": "^22.2.1",
-    "electron-builder": "^23.6.0",
-    "eslint": "^7.27.0",
-    "eslint-config-standard": "^14.1.0",
-    "eslint-plugin-import": "^2.22.1",
-    "eslint-plugin-node": "^10.0.0",
-    "eslint-plugin-promise": "^4.3.1",
-    "eslint-plugin-standard": "^4.0.2"
+    "electron": "25.3.2",
+    "electron-builder": "^24.6.3",
+    "eslint": "^8.45.0",
+    "eslint-config-standard": "^17.1.0",
+    "eslint-plugin-import": "^2.27.5",
+    "eslint-plugin-n": "^16.0.1",
+    "eslint-plugin-node": "^11.1.0",
+    "eslint-plugin-promise": "^6.1.1",
+    "eslint-plugin-standard": "^4.1.0"
   },
   "dependencies": {
-    "@electron/remote": "^2.0.8",
+    "@electron/remote": "^2.0.10",
     "backstage": "file:backstage",
+    "audiomoth-usb-microphone-cmd": "file:audiomoth-usb-microphone-cmd",
     "bootstrap": "^4.6.2",
     "electron-debug": "^3.2.0",
     "jquery": "^3.6.3",
     "jspdf": "^2.5.1",
-    "popper.js": "^1.16.1"
+    "@popperjs/core": "^2.11.8"
   }
 }

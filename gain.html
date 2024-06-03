@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+
+    <head>
+        <link rel="stylesheet" href="./node_modules/bootstrap/dist/css/bootstrap.min.css">
+        <link id="uiCSS" rel="stylesheet" href="css/ui.css">
+        <link rel="stylesheet" href="css/index.css">
+        <title>AudioMoth USB Microphone Gain</title>
+    </head>
+
+    <body style="font-size: 10pt; overflow: hidden; font-family: Helvetica, Arial, sans-serif;-webkit-user-select: none; -webkit-app-region: drag;">
+
+        <div class="container" style="text-align: center; padding: 8px;">
+
+            <div class="row" style="margin-bottom: 8px;">
+                <div class="col-12">
+                    <ul class="pagination" id="gain-pagination" style="margin-bottom: 0px;">
+                        <li class="page-item" style="text-align: center; width: 16.6%;"><a class="page-link" href="#">Low</a></li>
+                        <li class="page-item" style="text-align: center; width: 25%;"><a class="page-link" href="#">Low-Medium</a></li>
+                        <li class="page-item" style="text-align: center; width: 16.6%;"><a class="page-link" href="#">Medium</a></li>
+                        <li class="page-item" style="text-align: center; width: 25%;"><a class="page-link" href="#">Medium-High</a></li>
+                        <li class="page-item" style="text-align: center; width: 16.6%;"><a class="page-link" href="#">High</a></li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="row" style="margin-top: 0px; margin-bottom: 8px;">
+                <div class="col-12">
+                    <ul class="pagination" id="range-pagination" style="margin-bottom: 0px;">
+                        <li class="page-item" style="text-align: center; width: 50%;"><a class="page-link" href="#">Low Range</a></li>
+                        <li class="page-item" style="text-align: center; width: 50%;"><a class="page-link" href="#">Normal Range</a></li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="row" style="margin-top: 0px; margin-bottom: 8px;">
+                <div class="col-12">
+                    <button id="restore-button" class="btn btn-secondary" style="width: 100%;">Restore AudioMoth Gain Settings</button>
+                </div>
+            </div>
+
+        </div>
+
+    </body>
+
+    <script>
+        window.jQuery = window.$ = require('jquery');
+    </script>
+    <script src="./node_modules/bootstrap/dist/js/bootstrap.bundle.js"></script>
+    <script src="js/gainControl.js" charset="utf-8"></script>
+
+</html>

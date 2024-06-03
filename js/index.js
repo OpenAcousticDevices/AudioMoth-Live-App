@@ -11,7 +11,7 @@ const {app, dialog, getCurrentWindow, shell} = require('@electron/remote');
 const fs = require('fs');
 const path = require('path');
 
-var currentWindow = getCurrentWindow();
+const currentWindow = getCurrentWindow();
 
 const backstage = require('backstage');
 
@@ -67,7 +67,7 @@ const khzSpan = document.getElementById('khz-span');
 
 /* Constants which control the starting delay between hold action increments and the rate at which it accelerates */
 
-const HOLD_DELAY_MULTIPLIER = 0.96;
+const HOLD_DELAY_MULTIPLIER = 0.99;
 const HOLD_INITIAL_DELAY = 150;
 
 /* Pagination elements */
@@ -246,6 +246,8 @@ function changeSimulation (index) {
             console.log('No longer simulating');
 
         }
+
+        electron.ipcRenderer.send('is-simulating', simulationRunning);
 
         document.activeElement.blur();
 
@@ -609,6 +611,10 @@ function updateDisplay () {
     simulationRunning = result.simulationRunning;
 
     if (result.redrawRequired) {
+
+        // Notify gain window that device has changed
+
+        electron.ipcRenderer.send('redraw');
 
         const oldDeviceName = inputSpan.innerText;
         const newDeviceName = result.deviceName;
@@ -1048,6 +1054,9 @@ paginationButtons.initButtons(monitorPagination, (activeIndex) => {
 
 function changeHeterodyneFrequency (newHeterodyneFrequency) {
 
+    newHeterodyneFrequency = Math.max(newHeterodyneFrequency, heterodyneFrequencyMin);
+    newHeterodyneFrequency = Math.min(newHeterodyneFrequency, heterodyneFrequencyMax);
+
     heterodyneFrequency = newHeterodyneFrequency;
 
     updateHeterodyneUI(false);
@@ -1081,14 +1090,21 @@ function holdButton (button, delay, action) {
 
         }
 
-        action();
+        action(100);
         t = setTimeout(repeat, delay);
 
         delay = delay * HOLD_DELAY_MULTIPLIER;
 
     };
 
-    button.addEventListener('mousedown', () => {
+    button.addEventListener('mousedown', (e) => {
+
+        if (e.button === 2) {
+
+            action(1000);
+            return;
+
+        }
 
         repeat();
 
@@ -1103,15 +1119,15 @@ function holdButton (button, delay, action) {
 
 }
 
-holdButton(heterodyneUpButton, HOLD_INITIAL_DELAY, () => {
+holdButton(heterodyneUpButton, HOLD_INITIAL_DELAY, (amount) => {
 
-    changeHeterodyneFrequency(heterodyneFrequency + 100);
+    changeHeterodyneFrequency(heterodyneFrequency + amount);
 
 });
 
-holdButton(heterodyneDownButton, HOLD_INITIAL_DELAY, () => {
+holdButton(heterodyneDownButton, HOLD_INITIAL_DELAY, (amount) => {
 
-    changeHeterodyneFrequency(heterodyneFrequency - 100);
+    changeHeterodyneFrequency(heterodyneFrequency - amount);
 
 });
 

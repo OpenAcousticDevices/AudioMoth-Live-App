@@ -1,0 +1,8 @@
+{
+  "name": "audiomoth-usb-microphone-cmd",
+  "version": "1.0.0",
+  "description": "A Node.js controller for the AudioMoth USB Microphone command line application.",
+  "main": "index.js",
+  "author": "openacousticdevices.info",
+  "license": "ISC"
+}

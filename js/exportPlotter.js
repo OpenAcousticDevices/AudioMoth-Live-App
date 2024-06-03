@@ -445,7 +445,7 @@ function prepareAxisLabels (sampleRate, displayWidth) {
         tickX = Math.floor(tickX) + 0.5;
 
         xLabels.push({
-            labelX: labelX,
+            labelX,
             labelY: 12,
             label: labelText,
             lineX0: tickX,

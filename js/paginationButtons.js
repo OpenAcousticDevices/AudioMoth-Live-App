@@ -128,7 +128,7 @@ exports.removeActiveButton = (paginationElement) => {
  */
 function updateActiveButton (buttons, activeIndex, completeFunction) {
 
-    let previousSelection = 0;
+    let previousSelection = -1;
 
     for (let i = 0; i < buttons.length; i++) {
 

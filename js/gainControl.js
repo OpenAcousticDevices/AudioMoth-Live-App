@@ -84,13 +84,41 @@ function parseListEntry (line) {
 
     const lineSplit = line.split(' ');
 
-    const gain = parseInt(lineSplit[4]);
-    const lgr = lineSplit.length > 5 ? 0 : 1;
+    let gain = -1;
+    let lgr = false;
+    let success = false;
+
+    for (let i = 0; i < lineSplit.length; i++) {
+
+        const trimmedVal = lineSplit[i].replace(/\s+/g, ' ').trim();
+
+        if (trimmedVal === 'gain' && i + 1 < lineSplit.length) {
+
+            gain = parseInt(lineSplit[i + 1]);
+            success = true;
+
+        }
+
+        if (trimmedVal === 'lgr') {
+
+            lgr = true;
+
+        }
+
+    }
 
     return {
+        success,
         gain,
         lgr
     };
+
+}
+
+function updateUI (settings) {
+
+    paginationButtons.selectActiveButton(gainPagination, settings.gain);
+    paginationButtons.selectActiveButton(rangePagination, settings.lgr ? 0 : 1);
 
 }
 
@@ -108,7 +136,7 @@ function readSettings () {
 
         enableUI();
 
-        if (result === null || result.includes('[ERROR]')) {
+        if (result === null || result.includes('[ERROR]') || isSimulating) {
 
             disableUI();
 
@@ -117,6 +145,8 @@ function readSettings () {
         }
 
         const splitResult = result.split('\n');
+
+        // Check if single or multiple devices are connected
 
         if (splitResult.length === 3) {
 
@@ -134,18 +164,40 @@ function readSettings () {
 
             const deviceSettings = parseListEntry(splitResult[1]);
 
-            paginationButtons.selectActiveButton(gainPagination, deviceSettings.gain);
-            paginationButtons.selectActiveButton(rangePagination, deviceSettings.lgr);
+            if (deviceSettings.success) {
+
+                updateUI(deviceSettings);
+
+            } else {
+
+                disableUI();
+
+            }
 
         } else {
 
             // If multiple devices are connected, check to see if their settings are all the same
 
             let currentSettings;
+            let success = false;
 
             for (let i = 1; i < splitResult.length - 1; i++) {
 
+                if (splitResult[i].includes('[WARNING]') || splitResult[i].includes('[ERROR]')) {
+
+                    continue;
+
+                }
+
                 const deviceSettings = parseListEntry(splitResult[i]);
+
+                if (!deviceSettings.success) {
+
+                    continue;
+
+                }
+
+                success = true;
 
                 if (currentSettings === undefined) {
 
@@ -169,12 +221,21 @@ function readSettings () {
 
             }
 
+            if (!success) {
+
+                // If all devices failed
+
+                disableUI();
+
+                return;
+
+            }
+
             if (currentSettings) {
 
                 // If the settings are the same on all devices, set the UI to reflect that
 
-                paginationButtons.selectActiveButton(gainPagination, currentSettings.gain);
-                paginationButtons.selectActiveButton(rangePagination, currentSettings.lgr);
+                updateUI(currentSettings);
 
             }
 

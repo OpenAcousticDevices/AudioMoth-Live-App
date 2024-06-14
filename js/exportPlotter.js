@@ -107,6 +107,8 @@ const yLabelCounts = {
 const xMarkerLength = 4;
 const yMarkerLength = 4;
 
+let colourMapIndex = colourMap.COLOUR_MAP_DEFAULT;
+
 // Reset functions
 
 function resetWaveform () {
@@ -145,7 +147,7 @@ function resetSpectrogram () {
 
     if (!colourTable) {
 
-        colourTable = colourMap.create();
+        colourTable = colourMap.create(colourMapIndex);
 
     }
 
@@ -196,6 +198,8 @@ function drawWaveformColumn (columnOffset) {
     columnMin = Math.round(columnMin * multiplier + halfHeight);
     columnMax = Math.round(columnMax * multiplier + halfHeight);
 
+    const colour = colourMapIndex === colourMap.COLOUR_MAP_DEFAULT ? constants.PIXEL_COLOUR : constants.PIXEL_COLOUR_MONOCHROME;
+
     for (let row = 0; row < waveformPixelHeight; row += 1) {
 
         const col = pixelWidth - columnOffset;
@@ -204,7 +208,7 @@ function drawWaveformColumn (columnOffset) {
 
         const pixelIsBlank = row < columnMin || row > columnMax;
 
-        waveformPixels[index] = pixelIsBlank ? 0 : constants.PIXEL_COLOUR;
+        waveformPixels[index] = pixelIsBlank ? 0 : colour;
 
     }
 
@@ -599,9 +603,11 @@ exports.getCanvas = (displayWidth, sampleRate, title) => {
 
 // Main exported update function
 
-exports.prepare = (audioBuffer, stftBuffer, index, count, displayWidth, sampleRate, lowAmpColourScaleEnabled) => {
+exports.prepare = (audioBuffer, stftBuffer, index, count, displayWidth, sampleRate, lowAmpColourScaleEnabled, newColourMapIndex) => {
 
     const displayWidthSamples = displayWidth * sampleRate;
+
+    colourMapIndex = newColourMapIndex;
 
     resetWaveform();
     resetSpectrogram();

@@ -19,6 +19,8 @@ exports.LOW_AMP_COLOUR_MAX = 12.0;
 
 exports.PIXEL_COLOUR = (255 << 24) | (153 << 16) | (77 << 8) | 0;
 exports.PIXEL_COLOUR_NIGHT = (220 << 24) | (250 << 16) | (170 << 8) | 0;
+exports.PIXEL_COLOUR_MONOCHROME = (255 << 24) | (0 << 16) | (0 << 8) | 0;
+exports.PIXEL_COLOUR_MONOCHROME_NIGHT = (255 << 24) | (255 << 16) | (255 << 8) | 255;
 
 // STFT constants
 

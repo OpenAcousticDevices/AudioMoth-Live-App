@@ -29,6 +29,8 @@ const plotter = require('./js/plotter');
 const exportPlotter = require('./js/exportPlotter');
 const paginationButtons = require('./js/paginationButtons');
 
+const colourMap = require('./js/colourMap.js');
+
 /* UI elements */
 
 const inputSpan = document.getElementById('input-span');
@@ -146,6 +148,8 @@ let simulationRunning = false;
 let lowAmpColourScaleEnabled = false;
 let colourScaleChanged = false;
 
+let colourMapIndex = colourMap.COLOUR_MAP_DEFAULT;
+
 /* Error window displaying */
 
 function displayError (title, body, showDontShowCheckbox, dontShowCheckboxChecked, okayCallback) {
@@ -217,6 +221,18 @@ electron.ipcRenderer.on('low-amp-colour-scale', (e, enabled) => {
     lowAmpColourScaleEnabled = enabled;
 
     colourScaleChanged = true;
+
+});
+
+electron.ipcRenderer.on('change-colours', (e, ci) => {
+
+    const colourMapName = colourMap.COLOUR_MAP_NAMES[ci];
+
+    console.log('Changing colour map -', colourMapName);
+
+    colourMapIndex = ci;
+
+    drawWaveformBaseline();
 
 });
 
@@ -303,7 +319,7 @@ function endResize () {
 
     const width = Math.min(waveformBorder.offsetWidth, spectrogramBorder.offsetWidth);
 
-    plotter.resize(width, waveformBorder.offsetHeight, spectrogramBorder.offsetHeight);
+    plotter.resize(width, waveformBorder.offsetHeight, spectrogramBorder.offsetHeight, colourMapIndex);
 
     waveformBaselineSVG.style.display = '';
     waveformCanvas.style.display = '';
@@ -569,7 +585,17 @@ function drawWaveformBaseline () {
     const w = waveformBaselineSVG.width.baseVal.value;
     const h = waveformBaselineSVG.height.baseVal.value;
 
-    const colour = nightMode.isEnabled() ? 'white' : 'black';
+    let colour;
+
+    if (colourMapIndex === colourMap.COLOUR_MAP_DEFAULT) {
+
+        colour = nightMode.isEnabled() ? 'white' : 'black';
+
+    } else {
+
+        colour = 'grey';
+
+    }
 
     const y = Math.floor(h / 2) + 0.5;
 
@@ -685,7 +711,7 @@ function updateDisplay () {
 
     }
 
-    if (!resizing) plotter.update(audioBuffer, stftBuffer, plotter.UPDATE_BOTH, redraw, result.audioIndex, result.audioCount, displayWidth * currentSampleRate, nightMode.isEnabled(), lowAmpColourScaleEnabled);
+    if (!resizing) plotter.update(audioBuffer, stftBuffer, plotter.UPDATE_BOTH, redraw, result.audioIndex, result.audioCount, displayWidth * currentSampleRate, nightMode.isEnabled(), lowAmpColourScaleEnabled, colourMapIndex);
 
     // Update time display
 
@@ -859,7 +885,7 @@ function setPause (newPause) {
         fileName += '_';
         fileName += recordingDate.getUTCMilliseconds().toString().padStart(3, '0');
 
-        exportPlotter.prepare(audioBuffer, stftBuffer, pauseResult.audioIndex, pauseResult.audioCount, displayWidth, currentSampleRate, lowAmpColourScaleEnabled);
+        exportPlotter.prepare(audioBuffer, stftBuffer, pauseResult.audioIndex, pauseResult.audioCount, displayWidth, currentSampleRate, lowAmpColourScaleEnabled, colourMapIndex);
 
     }
 
@@ -1322,7 +1348,7 @@ window.onbeforeunload = (e) => {
 
 /* Prepare UI */
 
-plotter.reset();
+plotter.reset(colourMapIndex);
 
 drawWaveformBaseline();
 

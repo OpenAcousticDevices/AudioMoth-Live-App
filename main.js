@@ -36,6 +36,12 @@ const MENU_HEIGHT = 20;
 
 let simulationIndex = -1;
 let simulationCount = 0;
+let isSimulating = false;
+
+const COLOUR_MAP_DEFAULT = 0;
+const COLOUR_MAP_MONOCHROME = 1;
+const COLOUR_MAP_INVERSE_MONOCHROME = 2;
+const COLOUR_COUNT = 3;
 
 function shrinkWindowHeight (windowHeight) {
 
@@ -118,7 +124,13 @@ function openGainWindow () {
     gainWindow.webContents.on('dom-ready', () => {
 
         mainWindow.webContents.send('poll-night-mode');
-        gainWindow.show();
+        gainWindow.webContents.send('is-simulating', isSimulating);
+
+        setTimeout(() => {
+
+            gainWindow.show();
+
+        }, 100);
 
     });
 
@@ -249,6 +261,22 @@ function uncheckSimulations () {
 
 }
 
+function updateColours (colourMapIndex) {
+
+    const menu = Menu.getApplicationMenu();
+
+    for (let i = 0; i < COLOUR_COUNT; i++) {
+
+        const menuItem = menu.getMenuItemById('colour_' + i);
+
+        menuItem.checked = i === colourMapIndex;
+
+    }
+
+    mainWindow.webContents.send('change-colours', colourMapIndex);
+
+}
+
 const createWindow = () => {
 
     const iconLocation = (process.platform === 'linux') ? '/build/icon.png' : '/build/icon.ico';
@@ -341,6 +369,39 @@ const createWindow = () => {
         label: 'Simulate',
         id: 'simulationMenu',
         submenu: []
+    }, {
+        label: 'Colour',
+        submenu: [{
+            label: 'Default',
+            id: 'colour_0',
+            checked: true,
+            type: 'checkbox',
+            click: () => {
+
+                updateColours(COLOUR_MAP_DEFAULT);
+
+            }
+        }, {
+            label: 'Monochrome',
+            id: 'colour_1',
+            checked: false,
+            type: 'checkbox',
+            click: () => {
+
+                updateColours(COLOUR_MAP_MONOCHROME);
+
+            }
+        }, {
+            label: 'Inverse monochrome',
+            id: 'colour_2',
+            checked: false,
+            type: 'checkbox',
+            click: () => {
+
+                updateColours(COLOUR_MAP_INVERSE_MONOCHROME);
+
+            }
+        }]
     }, {
         label: 'Help',
         submenu: [{
@@ -477,7 +538,9 @@ const createWindow = () => {
 
     });
 
-    ipcMain.on('is-simulating', (e, isSimulating) => {
+    ipcMain.on('is-simulating', (e, is) => {
+
+        isSimulating = is;
 
         if (gainWindow) {
 

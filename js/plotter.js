@@ -51,8 +51,17 @@ const UPDATE_WAVEFORM = 1;
 const UPDATE_SPECTROGRAM = 2;
 
 let nightMode = false;
+let colourMapIndex = colourMap.COLOUR_MAP_DEFAULT;
 
 // Reset functions
+
+function resetColourMap (newColourMapIndex) {
+
+    colourMapIndex = newColourMapIndex;
+
+    colourTable = colourMap.create(colourMapIndex);
+
+}
 
 function resetWaveform () {
 
@@ -82,7 +91,7 @@ function resetSpectrogram () {
 
     if (!colourTable) {
 
-        colourTable = colourMap.create();
+        resetColourMap(colourMapIndex);
 
     }
 
@@ -114,7 +123,9 @@ function resetSpectrogram () {
 
 }
 
-exports.reset = () => {
+exports.reset = (colourMapIndex) => {
+
+    resetColourMap(colourMapIndex);
 
     resetWaveform();
 
@@ -189,7 +200,19 @@ function drawWaveformColumn (columnOffset) {
     columnMin = Math.round(columnMin * multiplier + halfHeight);
     columnMax = Math.round(columnMax * multiplier + halfHeight);
 
-    const colour = nightMode ? constants.PIXEL_COLOUR_NIGHT : constants.PIXEL_COLOUR;
+    let colour;
+
+    if (nightMode) {
+
+        colour = constants.PIXEL_COLOUR_NIGHT;
+        colour = colourMapIndex === colourMap.COLOUR_MAP_DEFAULT ? colour : constants.PIXEL_COLOUR_MONOCHROME_NIGHT;
+
+    } else {
+
+        colour = constants.PIXEL_COLOUR;
+        colour = colourMapIndex === colourMap.COLOUR_MAP_DEFAULT ? colour : constants.PIXEL_COLOUR_MONOCHROME;
+
+    }
 
     for (let row = 0; row < waveformPixelHeight; row += 1) {
 
@@ -232,11 +255,19 @@ function drawSpectrogramColumn (columnOffset, lowAmpColourScaleEnabled) {
 
 // Main exported update function
 
-exports.update = (audioBuffer, stftBuffer, mode, redraw, index, count, displayWidthSamples, isNightMode, lowAmpColourScaleEnabled) => {
+exports.update = (audioBuffer, stftBuffer, mode, redraw, index, count, displayWidthSamples, isNightMode, lowAmpColourScaleEnabled, newColourMapIndex) => {
 
     if (nightMode !== isNightMode) redraw = true;
 
     nightMode = isNightMode;
+
+    if (colourMapIndex !== newColourMapIndex) {
+
+        resetColourMap(newColourMapIndex);
+
+        redraw = true;
+
+    }
 
     let numberOfSamples = count - lastCount;
 

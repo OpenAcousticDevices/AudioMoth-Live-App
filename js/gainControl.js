@@ -82,33 +82,32 @@ restoreButton.addEventListener('click', () => {
 
 function parseListEntry (line) {
 
-    const lineSplit = line.split(' ');
+    const gainRegex = /gain [0|1|2|3|4]/;
+    const gainRegexResult = gainRegex.exec(line);
 
-    let gain = -1;
+    if (!gainRegexResult) {
+
+        return {
+            success: false
+        };
+
+    }
+
+    const gain = parseInt(gainRegexResult[0].split(' ')[1]);
+
+    const lgrRegex = /lgr/;
+    const lgrRegexResult = lgrRegex.exec(line);
+
     let lgr = false;
-    let success = false;
 
-    for (let i = 0; i < lineSplit.length; i++) {
+    if (lgrRegexResult) {
 
-        const trimmedVal = lineSplit[i].replace(/\s+/g, ' ').trim();
-
-        if (trimmedVal === 'gain' && i + 1 < lineSplit.length) {
-
-            gain = parseInt(lineSplit[i + 1]);
-            success = true;
-
-        }
-
-        if (trimmedVal === 'lgr') {
-
-            lgr = true;
-
-        }
+        lgr = true;
 
     }
 
     return {
-        success,
+        success: true,
         gain,
         lgr
     };

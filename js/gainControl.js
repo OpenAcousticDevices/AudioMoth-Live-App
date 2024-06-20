@@ -82,7 +82,7 @@ restoreButton.addEventListener('click', () => {
 
 function parseListEntry (line) {
 
-    const gainRegex = /gain [0|1|2|3|4]/;
+    const gainRegex = / gain (0|1|2|3|4)\b/;
     const gainRegexResult = gainRegex.exec(line);
 
     if (!gainRegexResult) {
@@ -93,9 +93,9 @@ function parseListEntry (line) {
 
     }
 
-    const gain = parseInt(gainRegexResult[0].split(' ')[1]);
+    const gain = parseInt(gainRegexResult[1]);
 
-    const lgrRegex = /lgr/;
+    const lgrRegex = / lgr\b/;
     const lgrRegexResult = lgrRegex.exec(line);
 
     let lgr = false;

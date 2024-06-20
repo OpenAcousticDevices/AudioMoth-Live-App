@@ -1,6 +1,6 @@
 {
   "name": "AudioMoth-Live",
-  "version": "1.1.1",
+  "version": "1.1.2",
   "description": "An Electron-based application for recording and analysing live audio from high sample rate microphones, including the AudioMoth USB Microphone.",
   "main": "main.js",
   "scripts": {

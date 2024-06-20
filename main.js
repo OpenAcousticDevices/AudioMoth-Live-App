@@ -322,19 +322,6 @@ const createWindow = () => {
 
             }
         }, {
-            type: 'checkbox',
-            id: 'lowAmpColourScale',
-            label: 'Enable Low-Amplitude Colour Scale',
-            accelerator: 'CommandOrControl+J',
-            checked: false,
-            click: () => {
-
-                const menuItem = menu.getMenuItemById('lowAmpColourScale');
-
-                mainWindow.webContents.send('low-amp-colour-scale', menuItem.checked);
-
-            }
-        }, {
             type: 'separator'
         }, {
             type: 'checkbox',
@@ -399,6 +386,21 @@ const createWindow = () => {
             click: () => {
 
                 updateColours(COLOUR_MAP_INVERSE_MONOCHROME);
+
+            }
+        }, {
+            type: 'separator'
+        }, {
+            type: 'checkbox',
+            id: 'lowAmpColourScale',
+            label: 'Enable Low-Amplitude Colour Scale',
+            accelerator: 'CommandOrControl+J',
+            checked: false,
+            click: () => {
+
+                const menuItem = menu.getMenuItemById('lowAmpColourScale');
+
+                mainWindow.webContents.send('low-amp-colour-scale', menuItem.checked);
 
             }
         }]

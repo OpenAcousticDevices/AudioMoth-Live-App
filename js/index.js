@@ -69,8 +69,9 @@ const khzSpan = document.getElementById('khz-span');
 
 /* Constants which control the starting delay between hold action increments and the rate at which it accelerates */
 
-const HOLD_DELAY_MULTIPLIER = 0.99;
-const HOLD_INITIAL_DELAY = 150;
+const HOLD_DELAY_MULTIPLIER = 0.9;
+const HOLD_INITIAL_DELAY = 250;
+const HOLD_MIN_DELAY = 5;
 
 /* Pagination elements */
 
@@ -118,7 +119,7 @@ let displayWidth = displayWidthValues[2];
 
 let canvasSizeChanged = false;
 
-const RESIZE_END_DELAY = 50;
+const RESIZE_END_DELAY = 200;
 
 const TARGET_FRAME_RATE = 60;
 const MILLISECOND_IN_SECOND = 1000;
@@ -313,18 +314,13 @@ electron.ipcRenderer.on('simulate', (e, index) => {
 
 function endResize () {
 
+    plotter.clearTemporaryCanvases();
+
     resizing = false;
 
     console.log('Redrawing plots after a window resize');
 
-    const width = Math.min(waveformBorder.offsetWidth, spectrogramBorder.offsetWidth);
-
-    plotter.resize(width, waveformBorder.offsetHeight, spectrogramBorder.offsetHeight, colourMapIndex);
-
     waveformBaselineSVG.style.display = '';
-    waveformCanvas.style.display = '';
-
-    spectrogramCanvas.style.display = '';
 
     drawWaveformBaseline();
     updateHeterodyneLine();
@@ -339,15 +335,24 @@ electron.ipcRenderer.on('resize', () => {
 
         clearTimeout(resizeTimer);
 
+        const width = Math.min(waveformBorder.offsetWidth, spectrogramBorder.offsetWidth);
+
+        spectrogramCanvas.width = width;
+        spectrogramCanvas.height = spectrogramBorder.offsetHeight;
+        waveformCanvas.width = width;
+        waveformCanvas.height = waveformBorder.offsetHeight;
+
+        plotter.drawTemporaryToCanvases();
+
+        drawWaveformBaseline();
+
     } else {
 
         resizing = true;
 
         drawSVG.clearSVG(waveformBaselineSVG);
 
-        waveformCanvas.style.display = 'none';
-
-        spectrogramCanvas.style.display = 'none';
+        plotter.saveCanvasesToTemporary();
 
         frequencyDisplay.clearDisplay();
         timeDisplay.clearDisplay();
@@ -392,7 +397,7 @@ electron.ipcRenderer.on('update-check', () => {
 
         twoOption.displayTwoOption('Download newer version', 'A newer version of this app is available (' + response.latestVersion + '), would you like to download it?', 'Yes', () => {
 
-            electron.shell.openExternal('https://www.openacousticdevices.info/applications');
+            electron.shell.openExternal('https://www.openacousticdevices.info/live');
 
         }, 'No', () => {
 
@@ -533,6 +538,22 @@ function updateHeterodyneUI (reset) {
     updateHeterodyneLine();
 
 }
+
+frequencyDisplay.addDoubleClickListener((clickedFrequency) => {
+
+    if (!isHeterodyneEnabled() || clickedFrequency > heterodyneFrequencyMax) {
+
+        return;
+
+    }
+
+    clickedFrequency = Math.max(heterodyneFrequencyMin, clickedFrequency);
+
+    changeHeterodyneFrequency(clickedFrequency);
+
+    checkHeterodyneButtons();
+
+});
 
 /**
  * Disable sample rates above the current device's sample rate (you can't downsample up)
@@ -708,6 +729,10 @@ function updateDisplay () {
         colourScaleChanged = false;
 
         redraw = true;
+
+        const width = Math.min(waveformBorder.offsetWidth, spectrogramBorder.offsetWidth);
+
+        plotter.resize(width, waveformBorder.offsetHeight, spectrogramBorder.offsetHeight, colourMapIndex);
 
     }
 
@@ -1025,7 +1050,6 @@ function handleMonitorChange (monitorSelection) {
     } else if (monitorSelection === 2) {
 
         console.log('Heterodyne enabled with frequency:', heterodyneFrequency, 'Hz');
-        changeAndSaveMonitorMode(backstage.MONITOR_HETERODYNE);
 
     }
 
@@ -1087,95 +1111,65 @@ function changeHeterodyneFrequency (newHeterodyneFrequency) {
 
     updateHeterodyneUI(false);
 
-    if (isHeterodyneEnabled()) {
-
-        changeAndSaveMonitorMode(backstage.MONITOR_HETERODYNE);
-
-    }
-
 }
 
 /**
- * Add functionality to a button which runs a function every delay ms while it is held
- * @param {Element} button Button to apply functionality to
- * @param {number} delay Amount of time between each firing of the action
- * @param {function} action Function to be run every delay ms
+ * Adds hold-to-repeat functionality to a button.
+ * @param {HTMLElement} button - The button element.
+ * @param {Function} fn - The function to call repeatedly while holding.
+ * @param {number} [initialDelay=HOLD_INITIAL_DELAY] - Initial delay in ms.
+ * @param {number} [minDelay=HOLD_MIN_DELAY] - Minimum delay in ms.
  */
-function holdButton (button, delay, action) {
+function addHoldRepeat (button, fn, initialDelay = HOLD_INITIAL_DELAY, minDelay = HOLD_MIN_DELAY) {
 
-    let t;
-    const start = delay;
+    let holdTimeout, holdInterval;
+    let delay = initialDelay;
+    let holding = false;
 
-    const repeat = () => {
+    function repeat () {
 
-        if (button.disabled) {
+        fn();
+        delay = Math.max(minDelay, delay * HOLD_DELAY_MULTIPLIER);
+        holdInterval = setTimeout(repeat, delay);
 
-            clearTimeout(t);
-            delay = start;
-            return;
+    }
 
-        }
+    function startHold (e) {
 
-        action(100);
-        t = setTimeout(repeat, delay);
+        if (holding) return;
 
-        delay = delay * HOLD_DELAY_MULTIPLIER;
+        holding = true;
+        delay = initialDelay;
+        fn();
+        holdTimeout = setTimeout(repeat, delay);
+        button.setPointerCapture && button.setPointerCapture(e.pointerId);
 
-    };
+    }
 
-    button.addEventListener('mousedown', (e) => {
+    function endHold () {
 
-        if (e.button === 2) {
+        holding = false;
+        clearTimeout(holdTimeout);
+        clearTimeout(holdInterval);
 
-            action(1000);
-            return;
+    }
 
-        }
-
-        repeat();
-
-    });
-
-    button.addEventListener('mouseup', () => {
-
-        clearTimeout(t);
-        delay = start;
-
-    });
+    button.addEventListener('pointerdown', startHold);
+    button.addEventListener('pointerup', endHold);
+    button.addEventListener('pointerleave', endHold);
+    button.addEventListener('pointercancel', endHold);
 
 }
 
-holdButton(heterodyneUpButton, HOLD_INITIAL_DELAY, (amount) => {
+addHoldRepeat(heterodyneDownButton, () => {
 
-    changeHeterodyneFrequency(heterodyneFrequency + amount);
-
-});
-
-holdButton(heterodyneDownButton, HOLD_INITIAL_DELAY, (amount) => {
-
-    changeHeterodyneFrequency(heterodyneFrequency - amount);
+    changeHeterodyneFrequency(heterodyneFrequency - 100);
 
 });
 
-// Keyboard can be used to click the buttons but not trigger hold, so detect that as a separate event
+addHoldRepeat(heterodyneUpButton, () => {
 
-heterodyneDownButton.addEventListener('click', (e) => {
-
-    if (e.pointerId === -1) {
-
-        changeHeterodyneFrequency(heterodyneFrequency - 100);
-
-    }
-
-});
-
-heterodyneUpButton.addEventListener('click', (e) => {
-
-    if (e.pointerId === -1) {
-
-        changeHeterodyneFrequency(heterodyneFrequency + 100);
-
-    }
+    changeHeterodyneFrequency(heterodyneFrequency + 100);
 
 });
 

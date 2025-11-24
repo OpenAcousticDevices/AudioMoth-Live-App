@@ -16,6 +16,13 @@ let colourTable;
 const waveformCanvas = document.getElementById('waveform-canvas');
 const spectrogramCanvas = document.getElementById('spectrogram-canvas');
 
+// Temporary canvases to store plots when resizing
+
+let waveformTempCanvas = null;
+let waveformTempContext = null;
+let spectrogramTempCanvas = null;
+let spectrogramTempContext = null;
+
 // Waveform variables
 
 let columnMax = constants.INT16_MIN;
@@ -151,6 +158,103 @@ exports.resize = (newWidth, newWaveformHeight, newSpectrogramHeight) => {
 
 };
 
+/**
+ * Save the current contents of the waveform and spectrogram canvases to their respective temporary canvases.
+ */
+exports.saveCanvasesToTemporary = () => {
+
+    if (!waveformTempCanvas) {
+
+        waveformTempCanvas = document.createElement('canvas');
+        waveformTempContext = waveformTempCanvas.getContext('2d');
+
+    }
+
+    if (!spectrogramTempCanvas) {
+
+        spectrogramTempCanvas = document.createElement('canvas');
+        spectrogramTempContext = spectrogramTempCanvas.getContext('2d');
+
+    }
+
+    // Draw to waveform temporary canvas
+
+    waveformTempCanvas.width = waveformCanvas.width;
+    waveformTempCanvas.height = waveformCanvas.height;
+    waveformTempContext.drawImage(waveformCanvas, 0, 0);
+
+    // Draw to spectrogram temporary canvas
+
+    spectrogramTempCanvas.width = spectrogramCanvas.width;
+    spectrogramTempCanvas.height = spectrogramCanvas.height;
+    spectrogramTempContext.drawImage(spectrogramCanvas, 0, 0);
+
+};
+
+/**
+ * Draw the temporary canvases back to the waveform and spectrogram canvases, stretching their contents to match the canvas sizes.
+ */
+exports.drawTemporaryToCanvases = () => {
+
+    if (waveformTempCanvas && waveformTempContext) {
+
+        const waveformContext = waveformCanvas.getContext('2d');
+        waveformContext.drawImage(
+            waveformTempCanvas,
+            0,
+            0,
+            waveformTempCanvas.width,
+            waveformTempCanvas.height,
+            0,
+            0,
+            waveformCanvas.width,
+            waveformCanvas.height
+        );
+
+    }
+
+    if (spectrogramTempCanvas && spectrogramTempContext) {
+
+        const spectrogramContext = spectrogramCanvas.getContext('2d');
+        spectrogramContext.drawImage(
+            spectrogramTempCanvas,
+            0,
+            0,
+            spectrogramTempCanvas.width,
+            spectrogramTempCanvas.height,
+            0,
+            0,
+            spectrogramCanvas.width,
+            spectrogramCanvas.height
+        );
+
+    }
+
+};
+
+/**
+ * Clear the temporary canvases.
+ */
+exports.clearTemporaryCanvases = () => {
+
+    if (waveformTempCanvas && waveformTempContext) {
+
+        waveformTempContext.clearRect(0, 0, waveformTempCanvas.width, waveformTempCanvas.height);
+        waveformTempCanvas = null;
+        waveformTempContext = null;
+
+    }
+
+    if (spectrogramTempCanvas && spectrogramTempContext) {
+
+        spectrogramTempContext.clearRect(0, 0, spectrogramTempCanvas.width, spectrogramTempCanvas.height);
+        spectrogramTempCanvas = null;
+        spectrogramTempContext = null;
+
+    }
+
+};
+
 // Drawing functions
 
 function scrollOrClearColumns (pixels, pixelHeight, redraw, numberOfColumns) {
@@ -193,7 +297,7 @@ function scrollOrClearColumns (pixels, pixelHeight, redraw, numberOfColumns) {
 
 function drawWaveformColumn (columnOffset) {
 
-    const halfHeight = waveformPixelHeight / 2;
+    const halfHeight = Math.round(waveformPixelHeight / 2) - 1;
 
     const multiplier = -halfHeight / constants.INT16_MIN;
 

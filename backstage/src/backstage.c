@@ -1521,13 +1521,13 @@ napi_value initialise(napi_env env, napi_callback_info info) {
 
     NAPI_CALL(env, "Failed to create undefined value", napi_get_undefined(env, &napi_value_undefined))
 
-    NAPI_CALL(env, "Failed to array buffer value", napi_create_arraybuffer(env, NUMBER_OF_BYTES_IN_SAMPLE * AUDIO_BUFFER_SIZE, (void**)&audioBuffer, &napi_audioArrayBuffer))
+    NAPI_CALL(env, "Failed to create array buffer value", napi_create_arraybuffer(env, NUMBER_OF_BYTES_IN_SAMPLE * AUDIO_BUFFER_SIZE, (void**)&audioBuffer, &napi_audioArrayBuffer))
 
-    NAPI_CALL(env, "Failed to typed array value", napi_create_typedarray(env, napi_int16_array, AUDIO_BUFFER_SIZE, napi_audioArrayBuffer, 0, &napi_audioTypedArray))
+    NAPI_CALL(env, "Failed to create typed array value", napi_create_typedarray(env, napi_int16_array, AUDIO_BUFFER_SIZE, napi_audioArrayBuffer, 0, &napi_audioTypedArray))
 
-    NAPI_CALL(env, "Failed to array buffer value", napi_create_arraybuffer(env, NUMBER_OF_BYTES_IN_FLOAT32 * AUDIO_BUFFER_SIZE / STFT_INPUT_OUTPUT_RATIO, (void**)&stftBuffer, &napi_stftArrayBuffer))
+    NAPI_CALL(env, "Failed to create array buffer value", napi_create_arraybuffer(env, NUMBER_OF_BYTES_IN_FLOAT32 * AUDIO_BUFFER_SIZE / STFT_INPUT_OUTPUT_RATIO, (void**)&stftBuffer, &napi_stftArrayBuffer))
 
-    NAPI_CALL(env, "Failed to typed array value", napi_create_typedarray(env, napi_float32_array, AUDIO_BUFFER_SIZE / STFT_INPUT_OUTPUT_RATIO, napi_stftArrayBuffer, 0, &napi_stftTypedArray))
+    NAPI_CALL(env, "Failed to create typed array value", napi_create_typedarray(env, napi_float32_array, AUDIO_BUFFER_SIZE / STFT_INPUT_OUTPUT_RATIO, napi_stftArrayBuffer, 0, &napi_stftTypedArray))
 
     /* Start the background thread */
 

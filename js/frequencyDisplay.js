@@ -7,6 +7,7 @@
 const drawSVG = require('./drawSVG');
 
 const spectrogramCanvas = document.getElementById('spectrogram-resizable-border-div');
+
 const spectrogramFrequencySVG = document.getElementById('spectrogram-frequency-svg');
 
 const frequencySpan = document.getElementById('frequency-span');
@@ -15,8 +16,17 @@ const clockSpan = document.getElementById('clock-span');
 let nyquist = 24000;
 
 let dragging = false;
-let dragStart;
 
+let dragStartY;
+
+const frequencyScalingValues = [100, 200, 500, 1000, 2000, 5000, 10000];
+
+const kHzStr = '&#8198;kHz';
+
+/**
+ * Format the frequency text
+ * @param {str} str Display string
+ */
 function updateText (str) {
 
     frequencySpan.style.display = '';
@@ -26,91 +36,106 @@ function updateText (str) {
 
 }
 
-function mouseDown (e) {
+/**
+ * Scale the frequency depending on the spectrogram range and height
+ * @param {y} y Current position on spectrogram
+ * @param {h} h Current spectrogram height
+ * @param {nyquist} nyquist Current Nyquite limit
+ */
+function scaleFrequency (y, h, nyquist) {
 
-    if (e.button !== 0) {
+    const frequencyPerPixel = nyquist / h;
 
-        return;
+    const frequency = y * frequencyPerPixel;
+
+    for (let i = 0; i < frequencyScalingValues.length; i += 1) {
+
+        const scalingValue = frequencyScalingValues[i];
+
+        if (frequencyPerPixel < scalingValue) {
+
+            return nyquist - scalingValue * Math.round(frequency / scalingValue);
+
+        }
 
     }
 
+    return frequency;
+
+}
+
+/**
+ * Convert mouse position to spectrogram Y position
+ * @param {e} event Current mouse event
+ */
+function getSpectrogramY (e) {
+
     const rect = spectrogramCanvas.getBoundingClientRect();
 
-    dragStart = e.clientY - rect.top;
+    const h = spectrogramFrequencySVG.height.baseVal.value;
+
+    return Math.min(h, Math.max(0, e.clientY - rect.top));
+
+}
+
+/**
+ * Handle mouse down
+ * @param {e} event Current mouse event
+ */
+function mouseDown (e) {
+
+    if (e.button !== 0) return;
+
+    dragStartY = getSpectrogramY(e);
+
     dragging = true;
 
 }
 
+/**
+ * Handle mouse move
+ * @param {e} event Current mouse event
+ */
 function mouseMove (e) {
 
-    const rect = spectrogramCanvas.getBoundingClientRect();
-    const currentY = e.clientY - rect.top;
-
     const w = spectrogramFrequencySVG.width.baseVal.value;
+
     const h = spectrogramFrequencySVG.height.baseVal.value;
+
+    const currentY = getSpectrogramY(e);
 
     drawSVG.clearSVG(spectrogramFrequencySVG);
 
-    const kHzStr = '&#8198;kHz';
+    if (dragging === false || (dragging === true && currentY === dragStartY)) {
 
-    if (dragging) {
+        const freq = scaleFrequency(currentY, h, nyquist);
 
-        let startFreq = (Math.min(dragStart, currentY) / h) * nyquist;
-        startFreq = Math.round(startFreq / 100) * 100;
+        updateText((freq / 1000).toFixed(1) + kHzStr);
 
-        let endFreq = (Math.max(dragStart, currentY) / h) * nyquist;
-        endFreq = Math.round(endFreq / 100) * 100;
+        drawSVG.addSVGLine(spectrogramFrequencySVG, 0, Math.floor(currentY) + 0.5, w, currentY, 'red');
 
-        if (startFreq === endFreq) {
+    } else if (dragging === true) {
 
-            const lineY = (startFreq / nyquist) * h;
+        const minimumY = Math.min(currentY, dragStartY);
+        const maximumY = Math.max(currentY, dragStartY);
 
-            // Cap value to nyquist as canvas captures mouse movement slightly outside of its bounds
+        drawSVG.addSVGLine(spectrogramFrequencySVG, 0, Math.floor(minimumY) + 0.5, w, Math.floor(minimumY) + 0.5, 'red');
+        drawSVG.addSVGRect(spectrogramFrequencySVG, 0, Math.floor(minimumY) + 0.5, w, maximumY - minimumY, 'red', 1, true, 'red', 0.3);
+        drawSVG.addSVGLine(spectrogramFrequencySVG, 0, Math.floor(maximumY) + 0.5, w, Math.floor(maximumY) + 0.5, 'red');
 
-            startFreq = Math.min(nyquist - startFreq, nyquist);
-            startFreq = Math.max(startFreq, 0);
+        const minimumFreq = scaleFrequency(maximumY, h, nyquist);
+        const maximumFreq = scaleFrequency(minimumY, h, nyquist);
 
-            updateText((startFreq / 1000).toFixed(1) + kHzStr);
-
-            drawSVG.addSVGLine(spectrogramFrequencySVG, 0, lineY, w, lineY, 'red');
-
-        } else {
-
-            const startY = (startFreq / nyquist) * h;
-            const endY = (endFreq / nyquist) * h;
-            const dragH = endY - startY;
-
-            // Cap value to nyquist as canvas captures mouse movement slightly outside of its bounds
-
-            startFreq = Math.min(nyquist - startFreq, nyquist);
-            endFreq = Math.min(nyquist - endFreq, nyquist);
-
-            startFreq = Math.max(startFreq, 0);
-            endFreq = Math.max(endFreq, 0);
-
-            updateText((endFreq / 1000).toFixed(1) + ' - ' + (startFreq / 1000).toFixed(1) + kHzStr);
-
-            drawSVG.addSVGLine(spectrogramFrequencySVG, 0, Math.floor(startY) + 0.5, w, Math.floor(startY) + 0.5, 'red');
-            drawSVG.addSVGRect(spectrogramFrequencySVG, 0, startY, w, dragH, 'red', 1, true, 'red', 0.3);
-            drawSVG.addSVGLine(spectrogramFrequencySVG, 0, Math.floor(endY) + 0.5, w, Math.floor(endY) + 0.5, 'red');
-
-        }
-
-    } else {
-
-        let freq = (currentY / h) * nyquist;
-        freq = Math.round(freq / 100) * 100;
-
-        updateText(((nyquist - freq) / 1000).toFixed(1) + kHzStr);
-
-        const lineY = (freq / nyquist) * h;
-
-        drawSVG.addSVGLine(spectrogramFrequencySVG, 0, lineY, w, lineY, 'red');
+        updateText((minimumFreq / 1000).toFixed(1) + ' - ' + (maximumFreq / 1000).toFixed(1) + kHzStr);
 
     }
 
 }
 
+/**
+ * Handle mouse up
+ * @param {e} event Current mouse event
+ */
 function mouseUp (e) {
 
     if (dragging) {
@@ -156,6 +181,22 @@ function updateSampleRate (sampleRate) {
 }
 
 exports.updateSampleRate = updateSampleRate;
+
+exports.addDoubleClickListener = (callback) => {
+
+    spectrogramCanvas.addEventListener('dblclick', (e) => {
+
+        const currentY = getSpectrogramY(e);
+
+        const h = spectrogramFrequencySVG.height.baseVal.value;
+
+        const frequency = scaleFrequency(currentY, h, nyquist);
+
+        callback(frequency);
+
+    });
+
+};
 
 /**
  * Set current sample rate and add mouse listeners

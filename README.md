@@ -23,12 +23,44 @@ This will place a packaged version of the app and an installer for the platform 
 
 For detailed usage instructions of the app itself and to download prebuilt installers of the latest stable version for all platforms, visit [AudioMoth Labs](https://www.openacousticdevices.info/labs).
 
-### Running the app on Linux ###
+## Linux and Raspberry Pi ##
 
 In order to run the app on a Linux machine, you must first set a udev rule which gives the application the required permissions. Navigate to `/lib/udev/rules.d/` and either create a new file or append to an existing file with the name `99-audiomoth.rules` the following:
 
 ```
 SUBSYSTEM=="usb", ATTRS{idVendor}=="16d0", ATTRS{idProduct}=="06f3", MODE="0666"
+```
+
+Furthermore, older Linux releases used PulseAudio to allow applications to connect with audio devices. Increasingly, Linux releases are moving to PipeWire. This includes Raspberry Pi OS Bookworm onwards and Ubunbu 24.04 LTS onwards.
+
+By default, PulseAudio supports all sample rates. However, PipeWire does not. This will show up as recordings with no high frequency components.
+
+You can check the installed audio server with:
+
+```
+> pactl info
+```
+
+If the `Server Name` response mentions `PipeWire`, even in combination with `PulseAudio`, then PipeWire is being used.
+
+To allow PipeWire to use all the available sample rates, you need to edit the PipeWire configuration:
+
+```
+> sudo nano /usr/share/pipewire/pipewire.conf
+```
+
+Uncomment and change the following two lines from:
+
+```
+#default.clock.rate          = [ 48000 ] 
+#default.clock.allowed-rates = [ 48000 ] 
+```
+
+to:
+
+```
+default.clock.rate          = [ 48000 ] 
+default.clock.allowed-rates = [ 8000, 16000, 32000, 48000, 96000, 192000, 250000, 384000 ] 
 ```
 
 ### Related Repositories ###

@@ -63,3 +63,7 @@ body {
 .value-span {
     text-align: right;
 }
+
+.page-link {
+    font-size: 10pt;
+}

@@ -83,7 +83,11 @@ bool Simulator_loadExample(int32_t index) {
 
     static char filename[FILEPATH_SIZE];
 
-    sprintf(filename, "%s%s%s", filepath, FILE_SEPARATOR, filenames[index]);
+    uint32_t length = snprintf(filename, FILEPATH_SIZE - 1, "%s", filepath);
+
+    length += snprintf(filename + length, FILEPATH_SIZE - length - 1, "%s", FILE_SEPARATOR);
+    
+    snprintf(filename + length, FILEPATH_SIZE - length - 1, "%s", filenames[index]);
     
     FILE *inputFile = fopen(filename, "rb");
 
@@ -203,6 +207,6 @@ int16_t Simulator_nextSample() {
 
 void Simulator_setPath(char *path) {
 
-    strncpy(filepath, path, FILEPATH_SIZE);
+    strncpy(filepath, path, FILEPATH_SIZE - 1);
 
 }

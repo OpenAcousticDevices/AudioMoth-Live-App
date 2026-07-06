@@ -30,7 +30,7 @@ let localTimeEnabled = true;
 
 function roundAccordingToDisplayWidth (n) {
 
-    let precision = 1;
+    let precision;
 
     switch (displayWidth) {
 

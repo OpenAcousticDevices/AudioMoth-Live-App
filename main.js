@@ -4,14 +4,14 @@
  * September 2022
  *****************************************************************************/
 
+/* global process, __dirname */
+
 const {app, BrowserWindow, ipcMain, Menu, shell, MenuItem, screen, systemPreferences} = require('electron');
 
-require('@electron/remote/main').initialize();
+const remoteMain = require('@electron/remote/main');
+remoteMain.initialize();
 
-require('electron-debug')({
-    showDevTools: true,
-    devToolsMode: 'undocked'
-});
+const electronDebug = require('electron-debug');
 
 const path = require('path');
 
@@ -26,9 +26,9 @@ const standardWindowSettings = {
     icon: path.join(__dirname, iconLocation),
     useContentSize: true,
     webPreferences: {
-        enableRemoteModule: true,
+        contextIsolation: false,
         nodeIntegration: true,
-        contextIsolation: false
+        sandbox: false
     }
 };
 
@@ -42,6 +42,8 @@ const COLOUR_MAP_DEFAULT = 0;
 const COLOUR_MAP_MONOCHROME = 1;
 const COLOUR_MAP_INVERSE_MONOCHROME = 2;
 const COLOUR_COUNT = 3;
+
+let isClosing = false;
 
 function shrinkWindowHeight (windowHeight) {
 
@@ -107,11 +109,17 @@ function openGainWindow () {
     gainWindow = new BrowserWindow(settings);
 
     gainWindow.setMenu(null);
-    gainWindow.loadURL(path.join('file://', __dirname, '/gain.html'));
+    gainWindow.loadFile('gain.html');
 
     gainWindow.setFullScreenable(false);
 
     require('@electron/remote/main').enable(gainWindow.webContents);
+
+    if (!app.isPackaged) {
+
+        electronDebug.openDevTools(gainWindow);
+
+    }
 
     gainWindow.on('close', (e) => {
 
@@ -175,11 +183,17 @@ function openAboutWindow () {
     aboutWindow = new BrowserWindow(settings);
 
     aboutWindow.setMenu(null);
-    aboutWindow.loadURL(path.join('file://', __dirname, '/about.html'));
+    aboutWindow.loadFile('about.html');
 
     aboutWindow.setFullScreenable(false);
 
     require('@electron/remote/main').enable(aboutWindow.webContents);
+
+    if (!app.isPackaged) {
+
+        electronDebug.openDevTools(aboutWindow);
+
+    }
 
     aboutWindow.on('close', (e) => {
 
@@ -458,12 +472,21 @@ const createWindow = () => {
         }
     });
 
-    mainWindow.loadURL(path.join('file://', __dirname, '/index.html'));
+    // TODO: This line fixes this issue: https://github.com/electron/electron/issues/51465 Check to see if still broken
+    // mainWindow.setSize(w, h);
+
+    mainWindow.loadFile('index.html');
+
+    require('@electron/remote/main').enable(mainWindow.webContents);
+
+    if (!app.isPackaged) {
+
+        electronDebug.openDevTools(mainWindow);
+
+    }
 
     // Show devtools in production
     // win.webContents.openDevTools();
-
-    require('@electron/remote/main').enable(mainWindow.webContents);
 
     mainWindow.on('resize', () => {
 
@@ -552,10 +575,20 @@ const createWindow = () => {
 
     });
 
-    ipcMain.on('app-quit', () => {
+    mainWindow.on('close', (e) => {
 
-        mainWindow.close();
-        app.quit();
+        if (isClosing) return;
+
+        e.preventDefault();
+
+        mainWindow.webContents.send('shutdown-autosave');
+
+        setTimeout(() => {
+
+            isClosing = true;
+            app.quit();
+
+        }, 500);
 
     });
 

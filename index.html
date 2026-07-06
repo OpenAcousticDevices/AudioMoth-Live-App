@@ -24,22 +24,22 @@
             <div id="plot-holder" style="flex: 1;">
 
                 <div class="row" style="padding-left: 25px; padding-right: 25px; padding-top: 0px; height: 30%;">
-                    <div class="wrapper" style="height: 100%;">
-                        <svg class="plot-canvas" id="waveform-baseline-svg" width="calc(100vw - 20px)" height="100%" style="z-index: 1;"></svg>
-                        <svg class="plot-canvas" id="waveform-time-svg" width="calc(100vw - 20px)" height="100%" style="z-index: 2;"></svg>
-                        <canvas class="plot-canvas" id="waveform-canvas" width="1004px" height="113px" style="z-index: 0;"></canvas>
+                    <div class="wrapper" style="height: 100%; padding: 0px;">
+                        <svg class="plot-canvas" id="waveform-baseline-svg" width="100%" height="100%" style="z-index: 1;"></svg>
+                        <svg class="plot-canvas" id="waveform-time-svg" width="100%" height="100%" style="z-index: 2;"></svg>
+                        <canvas class="plot-canvas" id="waveform-canvas" width="calc(100vw - 20px)" height="113px" style="z-index: 0;"></canvas>
                         <div class="plot-canvas" id="waveform-resizable-border-div" style="border-style: solid; border-width: 1px; z-index: 3; width: 100%; height: 100%;"></div>
-                        <div style="width: calc(100vw - 20px); height: 100%; z-index: 3;"></div>
+                        <div style="width: 100%; height: 100%; z-index: 3;"></div>
                     </div>
                 </div>
 
                 <div class="row" style="padding-left: 25px; padding-right: 25px; padding-top: 10px; padding-bottom: 10px; height: 70%;">
-                    <div class="wrapper">
-                        <canvas class="plot-canvas" id="spectrogram-canvas" width="1004px" height="289px" style="z-index: 0;"></canvas>
-                        <svg class="plot-canvas" id="spectrogram-frequency-svg" width="calc(100vw - 20px)" height="100%" style="z-index: 2;"></svg>
-                        <svg class="plot-canvas" id="spectrogram-heterodyne-svg" width="calc(100vw - 20px)" height="100%" style="z-index: 1;"></svg>
+                    <div class="wrapper" style="padding: 0px;">
+                        <canvas class="plot-canvas" id="spectrogram-canvas" width="998px" height="289px" style="z-index: 0;"></canvas>
+                        <svg class="plot-canvas" id="spectrogram-frequency-svg" width="100%" height="100%" style="z-index: 2;"></svg>
+                        <svg class="plot-canvas" id="spectrogram-heterodyne-svg" width="100%" height="100%" style="z-index: 1;"></svg>
                         <div class="plot-canvas" id="spectrogram-resizable-border-div" style="border-style: solid; border-width: 1px; width: 100%; height: 100%; z-index: 3;"></div>
-                        <div style="width: calc(100vw - 20px); height: 100%; z-index: 4;"></div>
+                        <div style="width: 100%; height: 100%; z-index: 4;"></div>
                     </div>
                 </div>
 
@@ -71,11 +71,11 @@
 
                 </div>
 
-                <div class="col" style="width: 100%;">
+                <div class="col" style="width: 100%; padding-right: 0px;">
 
-                    <div class="row">
-                        <label style="min-height: 35px; display: inline-flex; align-items: center; margin-top: 5px; margin-left: 5px;" aria-label="Sample rate (kilohertz):">Sample rate (kHz):</label>
-                        <ul class="pagination" id="sample-rate-pagination" style="margin-top: 5px; margin-bottom: 0px; margin-right: 8px; margin-left: auto;">
+                    <div class="row" style="flex-wrap: nowrap; align-items: center; margin-bottom: 8px;">
+                        <label style="min-height: 35px; display: inline-flex; align-items: center; margin-top: 5px; margin-left: 5px; padding-left: 0px; flex: 0 0 auto; width: auto; max-width: none; white-space: nowrap;" aria-label="Sample rate (kilohertz):">Sample rate (kHz):</label>
+                        <ul class="pagination" id="sample-rate-pagination" style="margin-top: 5px; margin-bottom: 0px; margin-right: 8px; margin-left: auto; flex-wrap: nowrap; width: auto;">
                             <li class="page-item sample-rate-pagination-option"><a class="page-link" href="#" aria-label="8 kilohertz sample rate">8</a></li>
                             <li class="page-item sample-rate-pagination-option"><a class="page-link" href="#" aria-label="16 kilohertz sample rate">16</a></li>
                             <li class="page-item sample-rate-pagination-option"><a class="page-link" href="#" aria-label="32 kilohertz sample rate">32</a></li>
@@ -87,9 +87,9 @@
                         </ul>
                     </div>
 
-                    <div class="row">
-                        <label style="min-height: 35px; display: inline-flex; align-items: center; margin-left: 5px; margin-bottom: 5px;">Autosave file duration (mins):</label>
-                        <ul class="pagination" id="autosave-length-pagination" style="margin-bottom: 5px; margin-right: 8px; margin-left: auto;">
+                    <div class="row" style="flex-wrap: nowrap; align-items: center;">
+                        <label style="min-height: 35px; display: inline-flex; align-items: center; margin-left: 5px; margin-bottom: 5px; padding-left: 0px; flex: 0 0 auto; width: auto; max-width: none; white-space: nowrap;">Autosave file duration (mins):</label>
+                        <ul class="pagination" id="autosave-length-pagination" style="margin-bottom: 5px; margin-right: 8px; margin-left: auto; flex-wrap: nowrap; width: auto;">
                             <li class="page-item active autosave-pagination-option"><a class="page-link" href="#" aria-label="Autosave off">Off</a></li>
                             <li class="page-item autosave-pagination-option"><a class="page-link" href="#" aria-label="1 minute autosave file duration">1</a></li>
                             <li class="page-item autosave-pagination-option"><a class="page-link" href="#" aria-label="5 minute autosave file duration">5</a></li>
@@ -102,8 +102,8 @@
 
                 <div class="col" style="padding: 0px; max-width: 235px;">
 
-                    <div class="row" style="width: 100%; margin-left: 0px;">
-                        <ul class="pagination" id="monitor-pagination" style="margin-left: auto; margin-right: 10px; margin-bottom: 8px; margin-top: 5px;">
+                    <div class="row" style="width: 100%; margin-left: 0px; justify-content: flex-end;">
+                        <ul class="pagination" id="monitor-pagination" style="margin-left: auto; margin-right: 10px; margin-bottom: 8px; margin-top: 5px; padding-right: 0px; flex: 0 0 auto; width: auto; max-width: none;">
                             <li class="page-item active" style="width: 45px; text-align: center;"><a class="page-link" href="#">Off</a></li>
                             <li class="page-item" style="width: 75px; text-align: center;"><a class="page-link" href="#">Monitor</a></li>
                             <li class="page-item" style="width: 95px; text-align: center;"><a class="page-link" href="#">Heterodyne</a></li>

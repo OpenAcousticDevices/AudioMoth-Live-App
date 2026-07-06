@@ -1,11 +1,13 @@
 'use strict';
 
+/* global process */
+
 const builder = require('electron-builder');
 const Platform = builder.Platform;
 
-var config, target, argTarget;
+let config, target;
 
-argTarget = process.argv[2];
+const argTarget = process.argv[2];
 
 switch (argTarget) {
 
@@ -45,6 +47,20 @@ case 'mac':
 case 'linux':
     console.log('Using build configuration to Linux (64-bit).');
     target = Platform.LINUX.createTarget();
+    config = {
+        linux: {
+            target: [
+                {
+                    target: 'deb',
+                    arch: 'x64'
+                },
+                {
+                    target: 'appimage',
+                    arch: 'x64'
+                }
+            ]
+        }
+    };
     break;
 default:
     console.error('ERROR - Build target not recognised. Accepted targets: win, win32, mac, linux.');
@@ -54,7 +70,7 @@ default:
 
 builder.build({
     targets: target,
-    config: config
+    config
 }).then(function (m) {
 
     console.log('Generated files:');

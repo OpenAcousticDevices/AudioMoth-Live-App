@@ -4,7 +4,7 @@
  * September 2022
  *****************************************************************************/
 
-/* global FileReader */
+/* global process */
 
 const electron = require('electron');
 const {app, dialog, getCurrentWindow, shell} = require('@electron/remote');
@@ -234,6 +234,12 @@ electron.ipcRenderer.on('change-colours', (e, ci) => {
     colourMapIndex = ci;
 
     drawWaveformBaseline();
+
+});
+
+electron.ipcRenderer.on('shutdown-autosave', () => {
+
+    backstage.forceAutoSaveToStop();
 
 });
 
@@ -1321,24 +1327,6 @@ exportAllButton.addEventListener('click', () => {
     });
 
 });
-
-window.onbeforeunload = (e) => {
-
-    // Prevent close
-
-    e.returnValue = false;
-
-    // Shutdown autosave
-
-    backstage.forceAutoSaveToStop();
-
-    // Clear function which catches close and trigger it again
-
-    window.onbeforeunload = null;
-
-    electron.ipcRenderer.send('app-quit');
-
-};
 
 /* Prepare UI */
 

@@ -613,9 +613,7 @@ exports.prepare = (audioBuffer, stftBuffer, index, count, displayWidth, sampleRa
     resetSpectrogram();
     resetExportCanvas();
 
-    let numberOfSamples = count;
-
-    numberOfSamples = Math.min(count, displayWidthSamples);
+    let numberOfSamples = Math.min(count, displayWidthSamples);
 
     for (let i = 0; i < stftArray.length; i += 1) stftArray[i] = 0;
 
@@ -729,7 +727,6 @@ exports.savePDF = (displayWidth, sampleRate, fileName, exportPath) => {
 
     // Create document
 
-    // eslint-disable-next-line new-cap
     const pdfDoc = new jsPDF.jsPDF({
         orientation: 'landscape',
         hotfixes: ['px_scaling'],
@@ -776,9 +773,7 @@ exports.savePDF = (displayWidth, sampleRate, fileName, exportPath) => {
         const labelText = xLabels[i].label.toString();
         const labelX = parseFloat(xLabels[i].labelX) + yAxisW - xOffset;
 
-        let labelAnchor = 'center';
-        labelAnchor = (i === 0) ? 'left' : 'center';
-        labelAnchor = (i === xLabels.length - 1) ? 'right' : 'center';
+        let labelAnchor = (i === xLabels.length - 1) ? 'right' : 'center';
 
         pdfDoc.text(labelText, labelX, yOffset1 + 15, {align: labelAnchor});
 

@@ -39,12 +39,16 @@ const waveformBaselineSVG = document.getElementById('waveform-baseline-svg');
 const waveformBorder = document.getElementById('waveform-resizable-border-div');
 const waveformCanvas = document.getElementById('waveform-canvas');
 
-waveformCanvas.height = waveformBorder.offsetHeight;
-
 const spectrogramCanvas = document.getElementById('spectrogram-canvas');
 const spectrogramBorder = document.getElementById('spectrogram-resizable-border-div');
 const spectrogramHeterodyneSVG = document.getElementById('spectrogram-heterodyne-svg');
 
+const initialPlotWidth = Math.min(waveformBorder.offsetWidth, spectrogramBorder.offsetWidth);
+
+waveformCanvas.width = initialPlotWidth;
+waveformCanvas.height = waveformBorder.offsetHeight;
+
+spectrogramCanvas.width = initialPlotWidth;
 spectrogramCanvas.height = spectrogramBorder.offsetHeight;
 
 const playIcon = document.getElementById('play-icon');

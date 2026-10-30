@@ -59,6 +59,8 @@ twoOptionButton0.addEventListener('click', (e) => {
 
     }
 
+    twoOptionModal.hide();
+
 });
 
 twoOptionButton1.addEventListener('click', (e) => {
@@ -70,6 +72,8 @@ twoOptionButton1.addEventListener('click', (e) => {
         twoOptionCallback1 = null;
 
     }
+
+    twoOptionModal.hide();
 
 });
 
@@ -118,6 +122,8 @@ twoOptionCheckButton0.addEventListener('click', (e) => {
 
     }
 
+    twoOptionCheckModal.hide();
+
 });
 
 twoOptionCheckButton1.addEventListener('click', (e) => {
@@ -129,5 +135,7 @@ twoOptionCheckButton1.addEventListener('click', (e) => {
         twoOptionCheckCallback1 = null;
 
     }
+
+    twoOptionCheckModal.hide();
 
 });

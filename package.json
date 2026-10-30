@@ -16,6 +16,11 @@
     "url": "https://github.com/OpenAcousticDevices/AudioMoth-Live-App.git"
   },
   "build": {
+    "files": [
+      "**/*",
+      "!backstage/**",
+      "!audiomoth-usb-microphone-cmd/**"
+    ],
     "extraResources": [
       "./simulator/"
     ],
@@ -26,6 +31,7 @@
     "mac": {
       "hardenedRuntime": true,
       "entitlements": "build/entitlements.mac.inherit.plist",
+      "x64ArchFiles": "**/node_modules/audiomoth-usb-microphone-cmd/bin/AudioMoth-USB-Microphone-macOS",
       "target": {
         "target": "dmg",
         "arch": "universal"

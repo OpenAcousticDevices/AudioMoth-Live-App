@@ -822,9 +822,9 @@ exports.savePDF = (displayWidth, sampleRate, fileName, exportPath) => {
     // jsPDF breaks if you try to centre align rotated text, so you have to hard code an offset
     const textOffsetY = 20;
 
-    pdfDoc.text('Amplitude', edgeSpacingW + 5, topSpacing + (waveformCanvas.height / 2) + textOffsetY, null, 90);
+    pdfDoc.text('Amplitude', edgeSpacingW + 10, topSpacing + (waveformCanvas.height / 2) + textOffsetY, {angle: 90});
 
-    pdfDoc.text('Frequency', edgeSpacingW + 5, topSpacing + waveformCanvas.height + plotSpacing + (spectrogramCanvas.height / 2) + 25, null, 90);
+    pdfDoc.text('Frequency', edgeSpacingW + 10, topSpacing + waveformCanvas.height + plotSpacing + (spectrogramCanvas.height / 2) + 25, {angle: 90});
 
     pdfDoc.setFontSize(11);
     pdfDoc.text(fileName + '.WAV', yAxisW + (waveformCanvas.width / 2), edgeSpacingH + 2, {align: 'center', baseline: 'top'});

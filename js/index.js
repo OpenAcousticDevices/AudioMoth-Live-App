@@ -88,21 +88,6 @@ const autosaveLengthValues = [-1, 1, 5, 10, 60]; // -1 = off
 const monitorPagination = document.getElementById('monitor-pagination');
 const monitorValues = [0, 1, 2]; // Off, Monitor, Heterodyne
 
-/* Error window elements */
-
-// eslint-disable-next-line no-undef
-const errorModal = new bootstrap.Modal(document.getElementById('error-modal'), {
-    backdrop: 'static',
-    keyboard: false
-});
-const errorTitle = document.getElementById('error-modal-title');
-const errorBody = document.getElementById('error-modal-body');
-const errorOkayButton = document.getElementById('error-modal-okay-button');
-const errorDontShowHolder = document.getElementById('error-dont-show-holder');
-const errorDontShowCheckbox = document.getElementById('error-dont-show-checkbox');
-
-let errorOkayCallback;
-
 let dontShowOldDeviceError = false;
 
 /* Variables */
@@ -159,37 +144,63 @@ let colourMapIndex = colourMap.COLOUR_MAP_DEFAULT;
 
 function displayError (title, body, showDontShowCheckbox, dontShowCheckboxChecked, okayCallback) {
 
-    if (showDontShowCheckbox) {
+    dialog.showMessageBox(currentWindow, {
+        type: 'error',
+        title,
+        message: body,
+        buttons: ['OK'],
+        defaultId: 0,
+        cancelId: 0,
+        noLink: true,
+        normalizeAccessKeys: true,
+        checkboxLabel: showDontShowCheckbox ? "Don't show this message again" : '',
+        checkboxChecked: showDontShowCheckbox ? dontShowCheckboxChecked : false
+    }).then((response) => {
 
-        errorDontShowHolder.style.display = 'flex';
-        errorDontShowCheckbox.checked = dontShowCheckboxChecked;
+        if (okayCallback) {
 
-    } else {
+            okayCallback(response.checkboxChecked);
 
-        errorDontShowHolder.style.display = 'none';
+        }
 
-    }
-
-    errorTitle.innerHTML = title;
-    errorBody.innerHTML = body;
-
-    errorOkayCallback = okayCallback;
-
-    errorModal.show();
+    });
 
 }
 
-errorOkayButton.addEventListener('click', (e) => {
+function displayErrorWithLink (title, body, linkLabel, linkURL, showDontShowCheckbox, dontShowCheckboxChecked, okayCallback) {
 
-    if (errorOkayCallback) {
+    dialog.showMessageBox(currentWindow, {
+        type: 'error',
+        title,
+        message: body,
+        buttons: ['Open ' + linkLabel, 'OK'],
+        defaultId: 1,
+        cancelId: 1,
+        noLink: true,
+        normalizeAccessKeys: true,
+        checkboxLabel: showDontShowCheckbox ? "Don't show this message again" : '',
+        checkboxChecked: showDontShowCheckbox ? dontShowCheckboxChecked : false
+    }).then((response) => {
 
-        errorOkayCallback(e);
+        if (response.response === 0) {
 
-        errorOkayCallback = null;
+            shell.openExternal(linkURL);
 
-    }
+            displayErrorWithLink(title, body, linkLabel, linkURL, showDontShowCheckbox, response.checkboxChecked, okayCallback);
 
-});
+            return;
+
+        }
+
+        if (okayCallback) {
+
+            okayCallback(response.checkboxChecked);
+
+        }
+
+    });
+
+}
 
 /* IPC messaging */
 
@@ -399,21 +410,29 @@ electron.ipcRenderer.on('update-check', () => {
 
         if (response.updateNeeded === false) {
 
-            displayError('Update not needed', 'Your app is on the latest version (' + response.latestVersion + ').');
+            dialog.showMessageBox(currentWindow, {
+                type: 'info',
+                buttons: ['OK'],
+                title: 'Update not needed',
+                message: 'AudioMoth Live App is on the latest version (' + response.latestVersion + ').'
+            });
 
             return;
 
         }
 
-        twoOption.displayTwoOption('Download newer version', 'A newer version of this app is available (' + response.latestVersion + '), would you like to download it?', 'Yes', () => {
+        const buttonIndex = dialog.showMessageBoxSync({
+            type: 'warning',
+            buttons: ['Yes', 'No'],
+            title: 'Download newer version',
+            message: 'A newer version of this app is available (' + response.latestVersion + '), would you like to download it?'
+        });
+
+        if (buttonIndex === 0) {
 
             electron.shell.openExternal('https://www.openacousticdevices.info/live');
 
-        }, 'No', () => {
-
-            console.log('Update rejected');
-
-        });
+        }
 
     });
 
@@ -645,21 +664,12 @@ function updateDisplay () {
 
     if (result.oldAudioMothFound && !dontShowOldDeviceError) {
 
-        let outdatedWarningText = 'The AudioMoth USB Microphone firmware running on your AudioMoth device is out of date. Download the ';
-        outdatedWarningText += '<a href="#" id="firmware-link">latest version</a>';
-        outdatedWarningText += ' and flash it using the AudioMoth Flash App.';
+        let outdatedWarningText = 'The AudioMoth USB Microphone firmware running on your AudioMoth device is out of date. ';
+        outdatedWarningText += 'Download the latest version and flash it using the AudioMoth Flash App.';
 
-        displayError('Outdated firmware', outdatedWarningText, true, dontShowOldDeviceError, () => {
+        displayErrorWithLink('Outdated firmware', outdatedWarningText, 'latest version', 'https://www.openacousticdevices.info/usb-microphone', true, dontShowOldDeviceError, (checkboxChecked) => {
 
-            dontShowOldDeviceError = errorDontShowCheckbox.checked;
-
-        });
-
-        const firmwareLink = document.getElementById('firmware-link');
-
-        firmwareLink.addEventListener('click', () => {
-
-            shell.openExternal('https://www.openacousticdevices.info/usb-microphone');
+            dontShowOldDeviceError = checkboxChecked;
 
         });
 

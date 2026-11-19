@@ -105,7 +105,7 @@ function openGainWindow () {
 
     }
 
-    const settings = generateSettings(windowWidth, windowHeight, 'Set Gain');
+    const settings = generateSettings(windowWidth, windowHeight, 'AudioMoth USB Microphone Gain');
     gainWindow = new BrowserWindow(settings);
 
     gainWindow.setMenu(null);
@@ -179,7 +179,7 @@ function openAboutWindow () {
 
     }
 
-    const settings = generateSettings(windowWidth, windowHeight, 'About');
+    const settings = generateSettings(windowWidth, windowHeight, 'About AudioMoth Live App');
     aboutWindow = new BrowserWindow(settings);
 
     aboutWindow.setMenu(null);
@@ -433,7 +433,7 @@ const createWindow = () => {
         }, {
             type: 'separator'
         }, {
-            label: 'AudioMoth Filter Playground',
+            label: 'AudioMoth Play Website',
             click: () => {
 
                 shell.openExternal('https://playground.openacousticdevices.info/');
@@ -456,6 +456,7 @@ const createWindow = () => {
     Menu.setApplicationMenu(menu);
 
     mainWindow = new BrowserWindow({
+        title: 'AudioMoth Live App',
         width: w,
         height: h,
         useContentSize: true,

@@ -192,6 +192,14 @@ exports.initButtons = (paginationElement, completeFunction) => {
 
                 updateActiveButton(buttons, i, completeFunction);
 
+                const focusedElement = document.activeElement;
+
+                if (focusedElement && buttons[i].contains(focusedElement)) {
+
+                    focusedElement.blur();
+
+                }
+
             }
 
         });

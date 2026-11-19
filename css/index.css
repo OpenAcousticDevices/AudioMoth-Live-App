@@ -67,3 +67,38 @@ body {
 .page-link {
     font-size: 10pt;
 }
+
+.modal-header {
+    position: relative;
+    padding-right: 44px;
+}
+
+.modal-header .close {
+    position: absolute;
+    top: 8px;
+    right: 12px;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: #333333;
+    opacity: 1;
+    font-size: 28px;
+    line-height: 1;
+    font-weight: 400;
+    text-shadow: none;
+}
+
+.modal-header .close:hover,
+.modal-header .close:focus,
+.modal-header .close:active {
+    color: #000000;
+    opacity: 1;
+    outline: none;
+}
+
+.modal-header .close .modal-close-button {
+    color: #333333;
+    display: inline-block;
+    transform: translateY(-1px);
+}
